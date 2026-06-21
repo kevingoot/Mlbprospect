@@ -1,47 +1,24 @@
 import streamlit as st
 import pandas as pd
-import requests
 from datetime import datetime
 import os
 
 st.set_page_config(page_title="MLB Prospect Analyzer", page_icon="⚾", layout="wide")
 
-# Cardsight API Key from Streamlit Secrets
 CARDSIGHT_KEY = st.secrets.get("CARDSIGHT_API_KEY", "") or os.environ.get("CARDSIGHT_API_KEY", "")
 
 def get_card_details(player_name):
-    """Try real Cardsight data, fallback to reliable images"""
-    if CARDSIGHT_KEY:
-        try:
-            resp = requests.get(
-                "https://api.cardsight.ai/v1/pricing/search",
-                params={"q": player_name, "sport": "baseball"},
-                headers={"Authorization": f"Bearer {CARDSIGHT_KEY}"},
-                timeout=8
-            )
-            if resp.status_code == 200:
-                results = resp.json().get("results", [])[:3]
-                if results:
-                    return [{
-                        "set": r.get("set_name", "2026 Set"),
-                        "type": r.get("variant", "Base"),
-                        "price": f"${r.get('avg_sold', 'N/A')}",
-                        "image": r.get("image_url") or "https://picsum.photos/id/1015/300/420"
-                    } for r in results]
-        except:
-            pass
-    
-    # Reliable fallback for iOS
+    """Simple reliable card mock for now (images fixed)"""
     return [
         {"set": "2026 Bowman Chrome", "type": "Refractor", "price": "$25-$80", 
-         "image": "https://picsum.photos/id/1015/300/420"},
+         "image": "https://picsum.photos/id/1015/320/420"},
         {"set": "2026 Topps Series 1", "type": "Auto", "price": "$80-$250", 
-         "image": "https://picsum.photos/id/201/300/420"},
+         "image": "https://picsum.photos/id/201/320/420"},
         {"set": "2026 Bowman", "type": "Base", "price": "$15-$45", 
-         "image": "https://picsum.photos/id/237/300/420"},
+         "image": "https://picsum.photos/id/237/320/420"},
     ]
 
-# Expanded Prospect Data
+# Data
 data = [
     {"player_name": "Jesús Made", "position": "SS", "team": "MIL", "current_stats": 2.8, "base_stats": 2.3, "risk_score": 30},
     {"player_name": "Colt Emerson", "position": "SS", "team": "SEA", "current_stats": 2.7, "base_stats": 2.2, "risk_score": 32},
@@ -49,8 +26,6 @@ data = [
     {"player_name": "Eli Willits", "position": "SS", "team": "WSN", "current_stats": 2.5, "base_stats": 2.0, "risk_score": 42},
     {"player_name": "Max Clark", "position": "OF", "team": "DET", "current_stats": 2.4, "base_stats": 2.0, "risk_score": 38},
     {"player_name": "Franklin Arias", "position": "SS", "team": "BOS", "current_stats": 2.5, "base_stats": 2.1, "risk_score": 36},
-    {"player_name": "Kevin McGonigle", "position": "SS", "team": "DET", "current_stats": 2.3, "base_stats": 1.9, "risk_score": 45},
-    {"player_name": "Konnor Griffin", "position": "SS/OF", "team": "PIT", "current_stats": 2.6, "base_stats": 2.0, "risk_score": 40},
 ]
 
 df = pd.DataFrame(data)
@@ -66,14 +41,14 @@ def calculate_scores(df):
 
 df = calculate_scores(df)
 
-# Main UI
+# UI
 st.title("⚾ MLB Prospect Analyzer")
 st.caption("Trade Show Edition • Tap name for card details")
 
 with st.sidebar:
-    if st.button("🔄 Weekly Cardsight Refresh", type="primary", use_container_width=True):
+    if st.button("🔄 Refresh Card Data", type="primary", use_container_width=True):
         st.cache_data.clear()
-        st.success("✅ Card data & images refreshed!")
+        st.success("✅ Refreshed!")
 
     search = st.text_input("🔍 Search Player")
 
@@ -92,7 +67,7 @@ for _, row in filtered.iterrows():
     with col3:
         st.write(row['recommendation'])
 
-# Card Detail View
+# Card Details
 if st.session_state.get("selected_player"):
     player = st.session_state.selected_player
     row = df[df['player_name'] == player].iloc[0]
