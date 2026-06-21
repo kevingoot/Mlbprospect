@@ -27,64 +27,67 @@ def calculate_scores(df):
 
 df = calculate_scores(df)
 
-# Main List View
-if "selected_player" not in st.session_state or st.session_state.selected_player is None:
-    st.title("⚾ MLB Prospect Analyzer")
-    st.caption("Trade Show Edition • Tap 'View' for details")
+# Main UI
+st.title("⚾ MLB Prospect Analyzer")
+st.caption("Trade Show Edition • Click View for details")
 
-    with st.sidebar:
-        if st.button("🔄 Weekly Refresh", type="primary", use_container_width=True):
-            st.cache_data.clear()
-            st.success("✅ Refreshed!")
+with st.sidebar:
+    if st.button("🔄 Weekly Refresh", type="primary", use_container_width=True):
+        st.cache_data.clear()
+        st.success("✅ Refreshed!")
 
-        search = st.text_input("🔍 Search Player")
+    search = st.text_input("🔍 Search Player")
 
-    filtered = df.copy()
-    if search:
-        filtered = filtered[filtered["player_name"].str.contains(search, case=False)]
+filtered = df.copy()
+if search:
+    filtered = filtered[filtered["player_name"].str.contains(search, case=False)]
 
-    st.subheader(f"Prospects ({len(filtered)} shown)")
-    for _, row in filtered.iterrows():
-        col1, col2, col3, col4 = st.columns([4, 2, 2, 2])
-        with col1:
-            st.write(f"**{row['player_name']}** ({row['team']})")
-        with col2:
-            st.metric("Score", row['call_up_score'])
-        with col3:
-            st.write(row['recommendation'])
-        with col4:
-            if st.button("View", key=row['player_name']):
-                st.session_state.selected_player = row['player_name']
+# Main Prospects List
+st.subheader(f"Top Prospects ({len(filtered)} shown)")
+for _, row in filtered.iterrows():
+    col1, col2, col3, col4 = st.columns([4, 2, 2, 2])
+    with col1:
+        st.write(f"**{row['player_name']}** ({row['team']})")
+    with col2:
+        st.metric("Score", row['call_up_score'])
+    with col3:
+        st.write(row['recommendation'])
+    with col4:
+        if st.button("View", key=row['player_name']):
+            st.session_state.selected_player = row['player_name']
 
-    st.divider()
-    st.subheader("Full Prospect Spreadsheet")
-    spreadsheet_df = df.sort_values("rank").copy()
-    
-    for i, row in spreadsheet_df.iterrows():
-        cols = st.columns([1, 3, 1, 1, 1, 2, 2])
-        with cols[0]:
-            st.write(row['rank'])
-        with cols[1]:
-            st.write(row['player_name'])
-        with cols[2]:
-            st.write(row['position'])
-        with cols[3]:
-            st.write(row['team'])
-        with cols[4]:
-            st.metric("Score", row['call_up_score'])
-        with cols[5]:
-            st.write(row['recommendation'])
-        with cols[6]:
-            if st.button("View", key=f"spread_{i}"):
-                st.session_state.selected_player = row['player_name']
-                st.rerun()
+st.divider()
+
+# Clickable Spreadsheet (main focus)
+st.subheader("Full Prospect Spreadsheet")
+spreadsheet_df = df.sort_values("rank").copy()
+
+for i, row in spreadsheet_df.iterrows():
+    cols = st.columns([1, 3, 1, 1, 1, 2, 2])
+    with cols[0]:
+        st.write(row['rank'])
+    with cols[1]:
+        st.write(row['player_name'])
+    with cols[2]:
+        st.write(row['position'])
+    with cols[3]:
+        st.write(row['team'])
+    with cols[4]:
+        st.metric("Score", row['call_up_score'])
+    with cols[5]:
+        st.write(row['recommendation'])
+    with cols[6]:
+        if st.button("View", key=f"spread_{i}"):
+            st.session_state.selected_player = row['player_name']
+            st.rerun()
 
 # Detail Page
-else:
+if "selected_player" in st.session_state and st.session_state.selected_player is not None:
     player = st.session_state.selected_player
     row = df[df['player_name'] == player].iloc[0]
     
-    if st.button("← Back to Main List", type="secondary"):
+    st.divider()
+    if st.button("← Back to Spreadsheet", type="secondary"):
         st.session_state.selected_player = None
         st.rerun()
     
