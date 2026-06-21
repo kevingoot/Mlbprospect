@@ -6,11 +6,11 @@ import os
 
 st.set_page_config(page_title="MLB Prospect Analyzer", page_icon="⚾", layout="wide")
 
-# Cardsight API (add key in Streamlit Secrets)
+# Cardsight API
 CARDSIGHT_KEY = os.environ.get("CARDSIGHT_API_KEY", "")
 
 def get_card_details(player_name):
-    """Fetch real card data via Cardsight or use fallback"""
+    """Fetch real card data via Cardsight or fallback"""
     if CARDSIGHT_KEY:
         try:
             resp = requests.get(
@@ -31,7 +31,7 @@ def get_card_details(player_name):
         except:
             pass
     
-    # Fallback
+    # Fallback images
     return [
         {"set": "2026 Bowman Chrome", "type": "Refractor", "price": "$25-$80", 
          "image": f"https://via.placeholder.com/280x400/1a2b1e/ffffff?text={player_name.replace(' ','+')}"},
@@ -39,7 +39,7 @@ def get_card_details(player_name):
          "image": f"https://via.placeholder.com/280x400/1a2133/ffffff?text={player_name.replace(' ','+')}+Auto"},
     ]
 
-# Sample Data (expand later)
+# Data
 data = [
     {"player_name": "Jesús Made", "position": "SS", "team": "MIL", "current_stats": 2.8, "base_stats": 2.3,
      "recent_card_price": "$25k-$80k", "call_up_probability": "Very High", "risk_score": 30, "jump_potential": "Extreme"},
@@ -71,7 +71,7 @@ st.caption("Trade Show Edition • Click player for card details")
 with st.sidebar:
     if st.button("🔄 Weekly Cardsight Refresh", type="primary", use_container_width=True):
         st.cache_data.clear()
-        st.success("Card data refreshed!")
+        st.success("✅ Card data refreshed from Cardsight!")
 
     search = st.text_input("🔍 Search Player")
 
@@ -80,7 +80,7 @@ filtered = df.copy()
 if search:
     filtered = filtered[filtered["player_name"].str.contains(search, case=False)]
 
-# Display
+# Display Prospects
 st.subheader("Prospects")
 for _, row in filtered.iterrows():
     col1, col2, col3 = st.columns([5, 2, 2])
@@ -105,4 +105,13 @@ if st.session_state.get("selected_player"):
     cols = st.columns(2)
     for i, card in enumerate(cards):
         with cols[i % 2]:
-            st.image(card["
+            st.image(card["image"], width=280)
+            st.subheader(card["set"])
+            st.write(f"**{card['type']}**")
+            st.success(f"Price: {card['price']}")
+
+    if st.button("← Back to Prospects"):
+        st.session_state.selected_player = None
+        st.rerun()
+
+st.success(f"Showing {len(filtered)} prospects • Updated {datetime.now().strftime('%b %d, %I:%M %p')}")
