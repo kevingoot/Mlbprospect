@@ -58,26 +58,12 @@ if "selected_player" not in st.session_state or st.session_state.selected_player
 
     st.divider()
     st.subheader("Full Prospect Spreadsheet")
-    spreadsheet_df = df.sort_values("rank").copy()
-    
-    for i, row in spreadsheet_df.iterrows():
-        col1, col2, col3, col4, col5, col6, col7 = st.columns([1, 3, 1, 1, 1, 2, 2])
-        with col1:
-            st.write(row['rank'])
-        with col2:
-            st.write(row['player_name'])
-        with col3:
-            st.write(row['position'])
-        with col4:
-            st.write(row['team'])
-        with col5:
-            st.metric("Score", row['call_up_score'])
-        with col6:
-            st.write(row['recommendation'])
-        with col7:
-            if st.button("View", key=f"spread_{i}"):
-                st.session_state.selected_player = row['player_name']
-                st.rerun()
+    spreadsheet_df = df.sort_values("rank")
+    st.dataframe(
+        spreadsheet_df[["rank", "player_name", "position", "team", "call_up_score", "recommendation"]],
+        use_container_width=True,
+        hide_index=True
+    )
 
 # Detail Page
 else:
