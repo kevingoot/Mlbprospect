@@ -79,7 +79,7 @@ if "selected_player" not in st.session_state or st.session_state.selected_player
                 st.session_state.selected_player = row['player_name']
                 st.rerun()
 
-# Detail Page (unchanged)
+# Detail Page
 else:
     player = st.session_state.selected_player
     row = df[df['player_name'] == player].iloc[0]
