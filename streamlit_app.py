@@ -3,6 +3,31 @@ from datetime import datetime
 
 st.set_page_config(page_title="MLB Prospect Analyzer", page_icon="⚾", layout="wide")
 
+st.markdown("""
+<style>
+    [data-testid="stAppViewContainer"] { background: #0d1117 !important; }
+    h1, h2, h3 { color: #ffffff !important; font-weight: 700 !important; }
+    .stButton > button {
+        background: linear-gradient(135deg, #1c2a3e, #0f1c2e) !important;
+        color: #79c0ff !important;
+        border: 1px solid #30475e !important;
+        border-radius: 12px !important;
+        font-size: 15px !important;
+        font-weight: 700 !important;
+        padding: 14px 10px !important;
+        height: 72px !important;
+        line-height: 1.3 !important;
+        text-align: center !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
+    }
+    .stButton > button:hover {
+        background: linear-gradient(135deg, #2a3f5a, #1a2a44) !important;
+        border-color: #58a6ff !important;
+    }
+    .stSuccess { background: #0d2818 !important; color: #3fb950 !important; border: 1px solid #238636 !important; }
+</style>
+""", unsafe_allow_html=True)
+
 st.title("MLB Prospect Analyzer")
 st.caption("Trade Show Edition • Tap team")
 
