@@ -30,7 +30,7 @@ df = calculate_scores(df)
 # Main List View
 if "selected_player" not in st.session_state or st.session_state.selected_player is None:
     st.title("⚾ MLB Prospect Analyzer")
-    st.caption("Trade Show Edition • Tap any player for full breakdown")
+    st.caption("Trade Show Edition • Tap name for full breakdown")
 
     with st.sidebar:
         if st.button("🔄 Weekly Refresh", type="primary", use_container_width=True):
@@ -64,12 +64,12 @@ if "selected_player" not in st.session_state or st.session_state.selected_player
         hide_index=True
     )
 
-# Player Detail Page (Separate View)
+# Separate Detail Page
 else:
     player = st.session_state.selected_player
     row = df[df['player_name'] == player].iloc[0]
     
-    # Back button at top
+    # Back button
     if st.button("← Back to Main List", type="secondary"):
         st.session_state.selected_player = None
         st.rerun()
@@ -79,9 +79,8 @@ else:
     
     st.divider()
     
-    # Popular Cards Section with Pictures
+    # Popular Cards with Pictures
     st.header("Most Popular Cards")
-    
     col1, col2, col3 = st.columns(3)
     with col1:
         st.image("https://picsum.photos/id/1015/300/420", width=280)
@@ -98,7 +97,7 @@ else:
     
     st.divider()
     
-    # Full Spreadsheet of their cards
+    # Full Card Spreadsheet
     st.header("All Current Card Variations")
     card_data = pd.DataFrame({
         "Set": ["2026 Bowman Chrome", "2026 Topps Series 1", "2026 Bowman", "2026 Bowman Chrome"],
@@ -113,10 +112,12 @@ else:
     # Upcoming Sets with Affiliate Links
     st.header("Upcoming Card Sets")
     st.write("**2026 Bowman Chrome** – Release: July 2026")
-    st.link_button("Buy on Amazon (Affiliate)", "https://amazon.com")
+    st.link_button("Buy on Amazon (Affiliate)", "https://www.amazon.com")
     
     st.write("**2026 Topps Update Series** – Release: August 2026")
-    st.link_button("Buy on eBay (Affiliate)", "https://ebay.com")
+    st.link_button("Buy on eBay (Affiliate)", "https://www.ebay.com")
     
     st.write("**2026 Bowman 1st Edition** – Release: September 2026")
-    st.link
+    st.link_button("Pre-order on Fanatics", "https://www.fanatics.com")
+
+st.success(f"Last updated: {datetime.now().strftime('%b %d, %I:%M %p')}")
