@@ -5,9 +5,8 @@ from datetime import datetime
 st.set_page_config(page_title="Prospect Spreadsheet", page_icon="⚾", layout="wide")
 
 st.title("MLB Prospect Spreadsheet")
-st.caption("Click any row for details • Trade Show Ready")
+st.caption("Click View for player details")
 
-# Data
 data = [
     {"rank": 1, "player": "Jesús Made", "team": "MIL", "score": 92, "rec": "Strong Buy"},
     {"rank": 2, "player": "Colt Emerson", "team": "SEA", "score": 88, "rec": "Strong Buy"},
@@ -19,43 +18,35 @@ data = [
 
 df = pd.DataFrame(data)
 
-search = st.text_input("Search Player")
+search = st.text_input("Search")
 
 filtered = df
 if search:
     filtered = df[df["player"].str.contains(search, case=False)]
 
-# The Spreadsheet
-st.subheader("Prospects")
-for i, row in filtered.iterrows():
-    cols = st.columns([1, 4, 1, 1, 2])
-    with cols[0]:
-        st.write(row['rank'])
-    with cols[1]:
-        st.write(row['player'])
-    with cols[2]:
-        st.write(row['team'])
-    with cols[3]:
-        st.metric("Score", row['score'])
-    with cols[4]:
-        if st.button("View Details", key=f"v{i}"):
-            st.session_state.selected = row['player']
+st.subheader("Prospect Spreadsheet")
+st.dataframe(
+    filtered,
+    use_container_width=True,
+    hide_index=True,
+    column_config={
+        "player": st.column_config.TextColumn("Player"),
+        "score": st.column_config.NumberColumn("Call-up Score"),
+    }
+)
 
-# Detail View
+for i, row in filtered.iterrows():
+    if st.button(f"View {row['player']}", key=f"v{i}"):
+        st.session_state.selected = row['player']
+
 if "selected" in st.session_state:
     player = st.session_state.selected
     st.divider()
-    if st.button("← Back to Spreadsheet"):
+    if st.button("Back"):
         st.session_state.selected = None
         st.rerun()
-    
     st.title(player)
-    st.write("Call-up Score: High")
-    st.header("Popular Cards")
-    st.write("Bowman Chrome Refractor: $25-$80")
-    st.write("Topps Auto: $80-$250")
-    st.header("Upcoming Sets")
-    st.link_button("Bowman Chrome", "https://amazon.com")
-    st.link_button("Topps Update", "https://ebay.com")
+    st.write("Score: High")
+    st.write("Cards: Bowman $25-80 | Topps $80-250")
 
 st.success(f"Updated {datetime.now().strftime('%I:%M %p')}")
