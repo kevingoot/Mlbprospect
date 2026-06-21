@@ -6,18 +6,11 @@ import os
 
 st.set_page_config(page_title="MLB Prospect Analyzer", page_icon="⚾", layout="wide")
 
-# Better way to read the key on Streamlit Cloud
+# Cardsight API Key from Streamlit Secrets
 CARDSIGHT_KEY = st.secrets.get("CARDSIGHT_API_KEY", "") or os.environ.get("CARDSIGHT_API_KEY", "")
 
-# Debug line - add this temporarily so you can see if the key is loading
-with st.sidebar:
-    if CARDSIGHT_KEY:
-        st.success("✅ Cardsight API key loaded successfully")
-    else:
-        st.warning("⚠️ No Cardsight API key detected — using fallback images")
-
 def get_card_details(player_name):
-    """Improved image handling"""
+    """Try real Cardsight data, fallback to reliable images"""
     if CARDSIGHT_KEY:
         try:
             resp = requests.get(
@@ -38,7 +31,7 @@ def get_card_details(player_name):
         except:
             pass
     
-    # More reliable fallback images
+    # Reliable fallback for iOS
     return [
         {"set": "2026 Bowman Chrome", "type": "Refractor", "price": "$25-$80", 
          "image": "https://picsum.photos/id/1015/300/420"},
@@ -48,7 +41,7 @@ def get_card_details(player_name):
          "image": "https://picsum.photos/id/237/300/420"},
     ]
 
-# Expanded Data
+# Expanded Prospect Data
 data = [
     {"player_name": "Jesús Made", "position": "SS", "team": "MIL", "current_stats": 2.8, "base_stats": 2.3, "risk_score": 30},
     {"player_name": "Colt Emerson", "position": "SS", "team": "SEA", "current_stats": 2.7, "base_stats": 2.2, "risk_score": 32},
@@ -56,6 +49,8 @@ data = [
     {"player_name": "Eli Willits", "position": "SS", "team": "WSN", "current_stats": 2.5, "base_stats": 2.0, "risk_score": 42},
     {"player_name": "Max Clark", "position": "OF", "team": "DET", "current_stats": 2.4, "base_stats": 2.0, "risk_score": 38},
     {"player_name": "Franklin Arias", "position": "SS", "team": "BOS", "current_stats": 2.5, "base_stats": 2.1, "risk_score": 36},
+    {"player_name": "Kevin McGonigle", "position": "SS", "team": "DET", "current_stats": 2.3, "base_stats": 1.9, "risk_score": 45},
+    {"player_name": "Konnor Griffin", "position": "SS/OF", "team": "PIT", "current_stats": 2.6, "base_stats": 2.0, "risk_score": 40},
 ]
 
 df = pd.DataFrame(data)
@@ -71,14 +66,14 @@ def calculate_scores(df):
 
 df = calculate_scores(df)
 
-# UI
+# Main UI
 st.title("⚾ MLB Prospect Analyzer")
-st.caption("Trade Show Edition • Tap name for full card portfolio")
+st.caption("Trade Show Edition • Tap name for card details")
 
 with st.sidebar:
-    if st.button("🔄 Refresh Card Data", type="primary", use_container_width=True):
+    if st.button("🔄 Weekly Cardsight Refresh", type="primary", use_container_width=True):
         st.cache_data.clear()
-        st.success("✅ Refreshed!")
+        st.success("✅ Card data & images refreshed!")
 
     search = st.text_input("🔍 Search Player")
 
@@ -97,7 +92,7 @@ for _, row in filtered.iterrows():
     with col3:
         st.write(row['recommendation'])
 
-# Card Details View
+# Card Detail View
 if st.session_state.get("selected_player"):
     player = st.session_state.selected_player
     row = df[df['player_name'] == player].iloc[0]
@@ -108,11 +103,14 @@ if st.session_state.get("selected_player"):
     
     cards = get_card_details(player)
     for card in cards:
-        st.image(card["image"], width=300)   # Larger, centered images
+        st.image(card["image"], width=320)
         st.subheader(card["set"])
         st.write(f"**{card['type']}**")
         st.success(f"Market: {card['price']}")
         st.divider()
 
-    if st.button("← Back to Prospects List"):
-        st.session_state.selected
+    if st.button("← Back to List"):
+        st.session_state.selected_player = None
+        st.rerun()
+
+st.success(f"Last updated: {datetime.now().strftime('%b %d, %I:%M %p')}")
