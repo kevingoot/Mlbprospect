@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime
-import os
 
 st.set_page_config(page_title="MLB Prospect Analyzer", page_icon="⚾", layout="wide")
 
@@ -54,31 +53,34 @@ for _, row in filtered.iterrows():
     with col3:
         st.write(row['recommendation'])
 
-# True Popup Detail (separate box)
+# Real Modal Popup
 if st.session_state.get("selected_player"):
     player = st.session_state.selected_player
     row = df[df['player_name'] == player].iloc[0]
     
-    st.divider()
-    st.header(f"📇 {player} — Detailed Breakdown")
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        st.write(f"**Position:** {row['position']}")
-        st.write(f"**Team:** {row['team']}")
-        st.write(f"**Rank:** {row['rank']}")
-    with col2:
-        st.metric("Call-up Score", row['call_up_score'])
-        st.write(f"**Recommendation:** {row['recommendation']}")
-    
-    st.divider()
-    st.subheader("Current Card Variations")
-    st.write("**2026 Bowman Chrome** - Refractor → Market: $25-$80")
-    st.write("**2026 Topps Series 1** - Auto → Market: $80-$250")
-    st.write("**2026 Bowman** - Base → Market: $15-$45")
-    
-    if st.button("Close Popup", type="secondary"):
-        st.session_state.selected_player = None
-        st.rerun()
+    with st.dialog("Player Detail"):
+        st.header(f"📇 {player}")
+        st.write(f"**{row['position']} • {row['team']}** | Call-up Score: **{row['call_up_score']}**")
+        st.write(f"Recommendation: **{row['recommendation']}**")
+        
+        st.divider()
+        st.subheader("Card Portfolio")
+        st.write("**2026 Bowman Chrome** - Refractor → $25-$80")
+        st.write("**2026 Topps Series 1** - Auto → $80-$250")
+        st.write("**2026 Bowman** - Base → $15-$45")
+        
+        if st.button("Close"):
+            st.session_state.selected_player = None
+            st.rerun()
+
+# Spreadsheet at the bottom
+st.divider()
+st.subheader("Full Prospect Spreadsheet")
+spreadsheet_df = df.sort_values("rank")
+st.dataframe(
+    spreadsheet_df[["rank", "player_name", "position", "team", "call_up_score", "recommendation"]],
+    use_container_width=True,
+    hide_index=True
+)
 
 st.success(f"Last updated: {datetime.now().strftime('%b %d, %I:%M %p')}")
