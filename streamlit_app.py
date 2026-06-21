@@ -5,126 +5,283 @@ st.set_page_config(page_title="MLB Prospect Analyzer", page_icon="⚾", layout="
 
 st.markdown("""
 <style>
-    /* iOS color fixes */
-    .stApp {
-        background-color: #0e1117;
-        color: #ffffff;
-    }
-    .stButton > button {
-        background-color: #1e3a5f !important;
-        color: #ffffff !important;
-        border: 1px solid #4a90d9 !important;
-        border-radius: 8px !important;
-        font-weight: 600 !important;
-        padding: 0.5rem !important;
-        width: 100% !important;
-    }
-    .stButton > button:hover {
-        background-color: #2a5298 !important;
-        border-color: #7ab3f0 !important;
-    }
-    .stButton > button:active {
-        background-color: #4a90d9 !important;
-    }
-    div[data-testid="stSuccess"] {
-        background-color: #1a3a1a !important;
-        color: #4caf50 !important;
-    }
-    h1, h2, h3 {
-        color: #ffffff !important;
-    }
-    .prospect-card {
-        background-color: #1e2530;
-        border: 1px solid #4a90d9;
-        border-radius: 10px;
-        padding: 1rem;
-        margin-bottom: 1rem;
-    }
-    .score-high { color: #4caf50; font-weight: bold; }
-    .score-med  { color: #ff9800; font-weight: bold; }
-    .score-low  { color: #f44336; font-weight: bold; }
+[data-testid="stAppViewContainer"] { background: #0d1117 !important; }
+[data-testid="stHeader"] { background: #0d1117 !important; }
+section[data-testid="stMain"] { background: #0d1117 !important; }
+.block-container { padding: 1rem !important; max-width: 100% !important; }
+body, p, span, div, label { color: #e6edf3 !important; }
+h1, h2, h3, h4 { color: #ffffff !important; }
+.stButton > button {
+    background: #1c2a3e !important;
+    color: #79c0ff !important;
+    border: 1px solid #30475e !important;
+    border-radius: 8px !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    padding: 0.4rem 0.6rem !important;
+    width: 100% !important;
+    text-align: left !important;
+}
+.stButton > button:active {
+    background: #2d4a6e !important;
+}
+[data-testid="stSuccess"] > div {
+    background: #0d2818 !important;
+    color: #3fb950 !important;
+    border: 1px solid #238636 !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
-teams = [
-    ("ARI", "Diamondbacks"), ("ATL", "Braves"),    ("BAL", "Orioles"),
-    ("BOS", "Red Sox"),      ("CHC", "Cubs"),       ("CHW", "White Sox"),
-    ("CIN", "Reds"),         ("CLE", "Guardians"),  ("COL", "Rockies"),
-    ("DET", "Tigers"),       ("HOU", "Astros"),     ("KC",  "Royals"),
-    ("LAA", "Angels"),       ("LAD", "Dodgers"),    ("MIA", "Marlins"),
-    ("MIL", "Brewers"),      ("MIN", "Twins"),      ("NYM", "Mets"),
-    ("NYY", "Yankees"),      ("OAK", "Athletics"),  ("PHI", "Phillies"),
-    ("PIT", "Pirates"),      ("SD",  "Padres"),     ("SF",  "Giants"),
-    ("SEA", "Mariners"),     ("STL", "Cardinals"),  ("TB",  "Rays"),
-    ("TEX", "Rangers"),      ("TOR", "Blue Jays"),  ("WSN", "Nationals"),
+TEAMS = [
+    ("ARI","Diamondbacks"), ("ATL","Braves"),    ("BAL","Orioles"),
+    ("BOS","Red Sox"),      ("CHC","Cubs"),       ("CHW","White Sox"),
+    ("CIN","Reds"),         ("CLE","Guardians"),  ("COL","Rockies"),
+    ("DET","Tigers"),       ("HOU","Astros"),     ("KC", "Royals"),
+    ("LAA","Angels"),       ("LAD","Dodgers"),    ("MIA","Marlins"),
+    ("MIL","Brewers"),      ("MIN","Twins"),      ("NYM","Mets"),
+    ("NYY","Yankees"),      ("OAK","Athletics"),  ("PHI","Phillies"),
+    ("PIT","Pirates"),      ("SD", "Padres"),     ("SF", "Giants"),
+    ("SEA","Mariners"),     ("STL","Cardinals"),  ("TB", "Rays"),
+    ("TEX","Rangers"),      ("TOR","Blue Jays"),  ("WSN","Nationals"),
 ]
+
+TEAM_COLORS = {
+    "ARI":"#A71930","ATL":"#CE1141","BAL":"#DF4601","BOS":"#BD3039",
+    "CHC":"#0E3386","CHW":"#27251F","CIN":"#C6011F","CLE":"#E31937",
+    "COL":"#33006F","DET":"#0C2340","HOU":"#EB6E1F","KC":"#004687",
+    "LAA":"#BA0021","LAD":"#005A9C","MIA":"#00A3E0","MIL":"#12284B",
+    "MIN":"#002B5C","NYM":"#002D72","NYY":"#003087","OAK":"#003831",
+    "PHI":"#E81828","PIT":"#FDB827","SD":"#2F241D","SF":"#FD5A1E",
+    "SEA":"#0C2C56","STL":"#C41E3A","TB":"#092C5C","TEX":"#003278",
+    "TOR":"#134A8E","WSN":"#AB0003",
+}
+
+PROSPECTS = {
+    "ARI":[{"player":"Cristian Mena","pos":"RHP","score":88,"call_up":"High","bowman":"$20-60","topps":"$60-180"},
+           {"player":"Deyvison De Los Santos","pos":"3B","score":85,"call_up":"Medium","bowman":"$15-45","topps":"$45-130"},
+           {"player":"Jordan Lawlar","pos":"SS","score":82,"call_up":"Medium","bowman":"$10-35","topps":"$35-100"}],
+    "ATL":[{"player":"Hurston Waldrep","pos":"RHP","score":87,"call_up":"High","bowman":"$15-50","topps":"$50-150"},
+           {"player":"Drake Baldwin","pos":"C","score":83,"call_up":"Medium","bowman":"$10-35","topps":"$30-90"},
+           {"player":"Nacho Alvarez Jr.","pos":"SS","score":80,"call_up":"Low","bowman":"$8-25","topps":"$25-70"}],
+    "BAL":[{"player":"Jackson Holliday","pos":"SS","score":93,"call_up":"High","bowman":"$40-120","topps":"$120-350"},
+           {"player":"Samuel Basallo","pos":"C","score":89,"call_up":"High","bowman":"$25-80","topps":"$80-230"},
+           {"player":"Coby Mayo","pos":"3B","score":86,"call_up":"Medium","bowman":"$15-50","topps":"$50-150"}],
+    "BOS":[{"player":"Roman Anthony","pos":"OF","score":95,"call_up":"High","bowman":"$60-200","topps":"$200-600"},
+           {"player":"Kyle Teel","pos":"C","score":87,"call_up":"High","bowman":"$20-65","topps":"$65-200"},
+           {"player":"Marcelo Mayer","pos":"SS","score":91,"call_up":"High","bowman":"$35-110","topps":"$110-320"}],
+    "CHC":[{"player":"Matt Shaw","pos":"SS","score":85,"call_up":"Medium","bowman":"$15-50","topps":"$50-150"},
+           {"player":"Kevin Made","pos":"SS","score":82,"call_up":"Medium","bowman":"$10-35","topps":"$30-90"},
+           {"player":"Owen Caissie","pos":"OF","score":81,"call_up":"Low","bowman":"$8-30","topps":"$25-80"}],
+    "CHW":[{"player":"Colson Montgomery","pos":"SS","score":87,"call_up":"High","bowman":"$20-65","topps":"$65-190"},
+           {"player":"Noah Schultz","pos":"LHP","score":85,"call_up":"Medium","bowman":"$15-50","topps":"$50-150"},
+           {"player":"Cam Caminiti","pos":"SS","score":83,"call_up":"Medium","bowman":"$12-40","topps":"$40-120"}],
+    "CIN":[{"player":"Rhett Lowder","pos":"RHP","score":88,"call_up":"High","bowman":"$20-65","topps":"$65-200"},
+           {"player":"Cam Collier","pos":"3B","score":86,"call_up":"Medium","bowman":"$15-50","topps":"$50-150"},
+           {"player":"Sal Stewart","pos":"3B","score":83,"call_up":"Medium","bowman":"$10-35","topps":"$35-100"}],
+    "CLE":[{"player":"Gavin Williams","pos":"RHP","score":86,"call_up":"Medium","bowman":"$15-50","topps":"$50-150"},
+           {"player":"Chase DeLauter","pos":"OF","score":83,"call_up":"Medium","bowman":"$10-35","topps":"$30-90"},
+           {"player":"Tanner Burns","pos":"RHP","score":80,"call_up":"Low","bowman":"$8-25","topps":"$20-60"}],
+    "COL":[{"player":"Chase Dollander","pos":"RHP","score":90,"call_up":"High","bowman":"$30-90","topps":"$90-270"},
+           {"player":"Kyle Freeland Jr.","pos":"LHP","score":82,"call_up":"Medium","bowman":"$8-30","topps":"$25-75"},
+           {"player":"Adael Amador","pos":"SS","score":84,"call_up":"Medium","bowman":"$12-40","topps":"$35-100"}],
+    "DET":[{"player":"Jackson Jobe","pos":"RHP","score":91,"call_up":"High","bowman":"$35-110","topps":"$110-320"},
+           {"player":"Colt Keith","pos":"2B","score":87,"call_up":"High","bowman":"$20-65","topps":"$65-190"},
+           {"player":"Ty Madden","pos":"RHP","score":82,"call_up":"Medium","bowman":"$8-30","topps":"$25-80"}],
+    "HOU":[{"player":"Brice Matthews","pos":"SS","score":84,"call_up":"Medium","bowman":"$12-40","topps":"$40-120"},
+           {"player":"Colin Barber","pos":"OF","score":81,"call_up":"Low","bowman":"$8-25","topps":"$20-60"},
+           {"player":"Chayce McDermott","pos":"RHP","score":83,"call_up":"Medium","bowman":"$10-35","topps":"$30-90"}],
+    "KC": [{"player":"Jac Caglianone","pos":"1B/LHP","score":90,"call_up":"High","bowman":"$30-90","topps":"$90-270"},
+           {"player":"Gavin Cross","pos":"OF","score":85,"call_up":"Medium","bowman":"$12-40","topps":"$40-120"},
+           {"player":"Blake Mitchell","pos":"SS","score":87,"call_up":"High","bowman":"$20-65","topps":"$65-190"}],
+    "LAA":[{"player":"Nolan Schanuel","pos":"1B","score":85,"call_up":"Medium","bowman":"$12-40","topps":"$40-120"},
+           {"player":"Caden Dana","pos":"RHP","score":83,"call_up":"Medium","bowman":"$10-35","topps":"$30-90"},
+           {"player":"Werner Blakely","pos":"SS","score":84,"call_up":"Medium","bowman":"$12-40","topps":"$35-105"}],
+    "LAD":[{"player":"Dalton Rushing","pos":"C","score":89,"call_up":"High","bowman":"$25-80","topps":"$80-230"},
+           {"player":"Tommy Edman","pos":"SS","score":85,"call_up":"Medium","bowman":"$10-35","topps":"$35-100"},
+           {"player":"Nick Frasso","pos":"RHP","score":84,"call_up":"Medium","bowman":"$10-35","topps":"$30-90"}],
+    "MIA":[{"player":"Noble Meyer","pos":"RHP","score":91,"call_up":"High","bowman":"$35-110","topps":"$110-320"},
+           {"player":"Jacob Berry","pos":"3B","score":85,"call_up":"Medium","bowman":"$12-40","topps":"$40-120"},
+           {"player":"Karson Ligon","pos":"RHP","score":82,"call_up":"Medium","bowman":"$8-30","topps":"$25-80"}],
+    "MIL":[{"player":"Jackson Chourio","pos":"OF","score":88,"call_up":"High","bowman":"$25-80","topps":"$80-230"},
+           {"player":"Sal Frelick","pos":"OF","score":85,"call_up":"Medium","bowman":"$12-40","topps":"$40-120"},
+           {"player":"Joey Wiemer","pos":"OF","score":82,"call_up":"Medium","bowman":"$8-30","topps":"$25-80"}],
+    "MIN":[{"player":"Walker Jenkins","pos":"OF","score":93,"call_up":"High","bowman":"$45-140","topps":"$140-420"},
+           {"player":"Hurston Waldrep","pos":"RHP","score":84,"call_up":"Medium","bowman":"$10-35","topps":"$35-100"},
+           {"player":"Emmanuel Rodriguez","pos":"OF","score":86,"call_up":"Medium","bowman":"$15-50","topps":"$50-150"}],
+    "NYM":[{"player":"Kevin Parada","pos":"C","score":88,"call_up":"High","bowman":"$20-65","topps":"$65-200"},
+           {"player":"Luisangel Acuna","pos":"SS","score":85,"call_up":"Medium","bowman":"$12-40","topps":"$40-120"},
+           {"player":"Jett Williams","pos":"SS","score":87,"call_up":"High","bowman":"$20-65","topps":"$65-190"}],
+    "NYY":[{"player":"Jasson Dominguez","pos":"OF","score":90,"call_up":"High","bowman":"$30-90","topps":"$90-270"},
+           {"player":"Spencer Jones","pos":"OF","score":87,"call_up":"High","bowman":"$20-65","topps":"$65-190"},
+           {"player":"George Lombard Jr.","pos":"OF","score":84,"call_up":"Medium","bowman":"$10-35","topps":"$35-100"}],
+    "OAK":[{"player":"Lawrence Butler","pos":"OF","score":86,"call_up":"Medium","bowman":"$15-50","topps":"$50-150"},
+           {"player":"Zack Gelof","pos":"2B","score":85,"call_up":"Medium","bowman":"$12-40","topps":"$40-120"},
+           {"player":"Max Muncy","pos":"SS","score":83,"call_up":"Medium","bowman":"$10-35","topps":"$30-90"}],
+    "PHI":[{"player":"Andrew Painter","pos":"RHP","score":90,"call_up":"High","bowman":"$30-90","topps":"$90-270"},
+           {"player":"Mick Abel","pos":"RHP","score":86,"call_up":"Medium","bowman":"$15-50","topps":"$50-150"},
+           {"player":"Aidan Miller","pos":"SS","score":88,"call_up":"High","bowman":"$20-65","topps":"$65-200"}],
+    "PIT":[{"player":"Paul Skenes","pos":"RHP","score":98,"call_up":"High","bowman":"$100-350","topps":"$350-1000"},
+           {"player":"Termarr Johnson","pos":"2B","score":87,"call_up":"High","bowman":"$20-65","topps":"$65-190"},
+           {"player":"Endy Rodriguez","pos":"C","score":85,"call_up":"Medium","bowman":"$12-40","topps":"$40-120"}],
+    "SD": [{"player":"Ethan Salas","pos":"C","score":93,"call_up":"High","bowman":"$45-140","topps":"$140-420"},
+           {"player":"Samuel Zavala","pos":"OF","score":88,"call_up":"High","bowman":"$20-65","topps":"$65-200"},
+           {"player":"Robby Snelling","pos":"LHP","score":89,"call_up":"High","bowman":"$25-80","topps":"$80-230"}],
+    "SF": [{"player":"Bryce Eldridge","pos":"1B/RHP","score":89,"call_up":"High","bowman":"$25-80","topps":"$80-230"},
+           {"player":"Marco Luciano","pos":"SS","score":85,"call_up":"Medium","bowman":"$12-40","topps":"$40-120"},
+           {"player":"Kyle Harrison","pos":"LHP","score":83,"call_up":"Medium","bowman":"$10-35","topps":"$30-90"}],
+    "SEA":[{"player":"Cole Young","pos":"SS","score":87,"call_up":"High","bowman":"$20-65","topps":"$65-190"},
+           {"player":"Harry Ford","pos":"C","score":86,"call_up":"Medium","bowman":"$15-50","topps":"$50-150"},
+           {"player":"Colt Emerson","pos":"SS","score":88,"call_up":"High","bowman":"$25-80","topps":"$80-250"}],
+    "STL":[{"player":"Masyn Winn","pos":"SS","score":88,"call_up":"High","bowman":"$20-65","topps":"$65-200"},
+           {"player":"Gordon Graceffo","pos":"RHP","score":84,"call_up":"Medium","bowman":"$10-35","topps":"$35-100"},
+           {"player":"Tink Hence","pos":"RHP","score":87,"call_up":"High","bowman":"$20-65","topps":"$65-190"}],
+    "TB": [{"player":"Jonny DeLuca","pos":"OF","score":84,"call_up":"Medium","bowman":"$10-35","topps":"$35-100"},
+           {"player":"Carson Williams","pos":"SS","score":90,"call_up":"High","bowman":"$30-90","topps":"$90-270"},
+           {"player":"Taj Bradley","pos":"RHP","score":86,"call_up":"Medium","bowman":"$15-50","topps":"$50-150"}],
+    "TEX":[{"player":"Wyatt Langford","pos":"OF","score":89,"call_up":"High","bowman":"$25-80","topps":"$80-230"},
+           {"player":"Kumar Rocker","pos":"RHP","score":86,"call_up":"Medium","bowman":"$15-50","topps":"$50-150"},
+           {"player":"Brock Porter","pos":"RHP","score":84,"call_up":"Medium","bowman":"$10-35","topps":"$35-100"}],
+    "TOR":[{"player":"Ricky Tiedemann","pos":"LHP","score":91,"call_up":"High","bowman":"$35-110","topps":"$110-320"},
+           {"player":"Orelvis Martinez","pos":"SS","score":85,"call_up":"Medium","bowman":"$12-40","topps":"$40-120"},
+           {"player":"Leo De Vries","pos":"SS","score":85,"call_up":"Medium","bowman":"$15-50","topps":"$50-150"}],
+    "WSN":[{"player":"James Wood","pos":"OF","score":96,"call_up":"High","bowman":"$80-250","topps":"$250-750"},
+           {"player":"Brady House","pos":"SS","score":86,"call_up":"Medium","bowman":"$15-50","topps":"$50-150"},
+           {"player":"Dylan Crews","pos":"OF","score":89,"call_up":"High","bowman":"$25-80","topps":"$80-230"}],
+}
+
+for code, _ in TEAMS:
+    if code not in PROSPECTS:
+        PROSPECTS[code] = [
+            {"player":"Jesús Made","pos":"SS","score":92,"call_up":"High","bowman":"$25-80","topps":"$80-250"},
+            {"player":"Colt Emerson","pos":"SS","score":88,"call_up":"High","bowman":"$20-65","topps":"$65-190"},
+            {"player":"Leo De Vries","pos":"SS","score":85,"call_up":"Medium","bowman":"$15-50","topps":"$50-150"},
+        ]
 
 if "current_team" not in st.session_state:
     st.session_state.current_team = None
 if "selected_player" not in st.session_state:
     st.session_state.selected_player = None
 
-# ── TEAM SELECTION ──────────────────────────────────────────────────────────
 if st.session_state.current_team is None:
-    st.subheader("⚾ Select a Team")
+    st.markdown("## ⚾ MLB Prospect Analyzer")
+    st.markdown("*Trade Show Edition — Tap a team*")
+
+    grid_html = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;">'
+    for code, name in TEAMS:
+        color = TEAM_COLORS.get(code, "#1c2a3e")
+        grid_html += f"""
+        <div style="
+            background:{color};
+            border-radius:10px;
+            padding:10px 12px;
+            text-align:center;
+            border:1px solid rgba(255,255,255,0.15);
+        ">
+            <div style="color:#ffffff;font-weight:700;font-size:16px;">{code}</div>
+            <div style="color:rgba(255,255,255,0.85);font-size:12px;">{name}</div>
+        </div>
+        """
+    grid_html += "</div>"
+    st.markdown(grid_html, unsafe_allow_html=True)
+
+    st.markdown("---")
+    st.markdown("**Select your team:**")
     cols = st.columns(2)
-    for i, (code, name) in enumerate(teams):
+    for i, (code, name) in enumerate(TEAMS):
         with cols[i % 2]:
-            if st.button(f"{code}  {name}", key=code, use_container_width=True):
+            if st.button(f"{code} — {name}", key=f"btn_{code}", use_container_width=True):
                 st.session_state.current_team = code
                 st.session_state.selected_player = None
                 st.rerun()
 
-# ── TEAM PROSPECTS ───────────────────────────────────────────────────────────
 else:
     team = st.session_state.current_team
+    team_name = next(n for c, n in TEAMS if c == team)
+    color = TEAM_COLORS.get(team, "#1c2a3e")
 
-    # Back button
-    if st.button("← Back to Teams"):
+    if st.button("← Back to All Teams"):
         st.session_state.current_team = None
         st.session_state.selected_player = None
         st.rerun()
 
-    st.title(f"⚾ {team} Top Prospects")
+    st.markdown(f"""
+    <div style="
+        background:{color};
+        border-radius:12px;
+        padding:16px 20px;
+        margin:12px 0;
+        border:1px solid rgba(255,255,255,0.2);
+    ">
+        <div style="color:#ffffff;font-size:28px;font-weight:800;">{team}</div>
+        <div style="color:rgba(255,255,255,0.85);font-size:16px;">{team_name} — Top Prospects</div>
+    </div>
+    """, unsafe_allow_html=True)
 
-    # --- swap in real per-team data here as needed ---
-    prospects = [
-        {"player": "Jesús Made",   "pos": "SS", "score": 92,
-         "bowman": "$25–80",  "topps": "$80–250",  "call_up": "High"},
-        {"player": "Colt Emerson", "pos": "SS", "score": 88,
-         "bowman": "$15–50",  "topps": "$60–180",  "call_up": "Medium"},
-        {"player": "Leo De Vries", "pos": "SS", "score": 85,
-         "bowman": "$10–40",  "topps": "$40–120",  "call_up": "Medium"},
-    ]
+    prospects = PROSPECTS.get(team, [])
 
     for p in prospects:
-        label = f"{'🟢' if p['score'] >= 90 else '🟡' if p['score'] >= 85 else '🔴'}  {p['player']}  ({p['pos']})  —  Score: {p['score']}"
-        if st.button(label, key=p["player"], use_container_width=True):
+        score = p["score"]
+        if score >= 90:
+            dot = "🟢"
+            badge_bg = "#0d2818"
+            badge_color = "#3fb950"
+        elif score >= 85:
+            dot = "🟡"
+            badge_bg = "#2d1f00"
+            badge_color = "#d29922"
+        else:
+            dot = "🔴"
+            badge_bg = "#2d0c0c"
+            badge_color = "#f85149"
+
+        label = f"{dot} {p['player']} ({p['pos']})  |  Score: {score}"
+        if st.button(label, key=f"p_{p['player']}", use_container_width=True):
             if st.session_state.selected_player == p["player"]:
-                st.session_state.selected_player = None   # toggle off
+                st.session_state.selected_player = None
             else:
                 st.session_state.selected_player = p["player"]
             st.rerun()
 
-    # ── PLAYER DETAIL ────────────────────────────────────────────────────────
-    if st.session_state.selected_player:
-        match = next((p for p in prospects if p["player"] == st.session_state.selected_player), None)
-        if match:
-            st.divider()
-            score_class = "score-high" if match["score"] >= 90 else "score-med" if match["score"] >= 85 else "score-low"
+        if st.session_state.selected_player == p["player"]:
             st.markdown(f"""
-<div class="prospect-card">
-  <h2 style="color:#ffffff;margin-top:0">{match['player']}</h2>
-  <p><b>Position:</b> {match['pos']}</p>
-  <p><b>Call-up Score:</b> <span class="{score_class}">{match['score']} — {match['call_up']}</span></p>
-  <hr style="border-color:#4a90d9"/>
-  <p>🃏 <b>Bowman:</b> {match['bowman']}</p>
-  <p>📦 <b>Topps:</b> {match['topps']}</p>
-</div>
-""", unsafe_allow_html=True)
-
-            if st.button("✕  Close", key="close_player"):
-                st.session_state.selected_player = None
-                st.rerun()
+            <div style="
+                background:#161b22;
+                border:1px solid {color};
+                border-radius:10px;
+                padding:16px 20px;
+                margin:4px 0 12px 0;
+            ">
+                <div style="color:#ffffff;font-size:20px;font-weight:700;margin-bottom:12px;">
+                    {p['player']} <span style="color:rgba(255,255,255,0.5);font-size:14px;">· {p['pos']}</span>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+                    <div style="background:#0d1117;border-radius:8px;padding:10px 12px;border:1px solid #30475e;">
+                        <div style="color:#8b949e;font-size:11px;margin-bottom:4px;">CALL-UP SCORE</div>
+                        <div style="color:#ffffff;font-size:18px;font-weight:700;">{score}</div>
+                        <div style="background:{badge_bg};color:{badge_color};font-size:11px;font-weight:600;
+                             padding:3px 8px;border-radius:6px;display:inline-block;margin-top:4px;">
+                            {p['call_up']}
+                        </div>
+                    </div>
+                    <div style="background:#0d1117;border-radius:8px;padding:10px 12px;border:1px solid #30475e;">
+                        <div style="color:#8b949e;font-size:11px;margin-bottom:4px;">POSITION</div>
+                        <div style="color:#ffffff;font-size:18px;font-weight:700;">{p['pos']}</div>
+                        <div style="color:#8b949e;font-size:11px;margin-top:4px;">Field position</div>
+                    </div>
+                </div>
+                <div style="background:#0d1117;border-radius:8px;padding:12px 14px;border:1px solid #30475e;">
+                    <div style="color:#8b949e;font-size:11px;margin-bottom:8px;">🃏 CARD VALUES</div>
+                    <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+                        <span style="color:#8b949e;font-size:13px;">Bowman Chrome</span>
+                        <span style="color:#79c0ff;font-weight:600;font-size:13px;">{p['bowman']}</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;">
+                        <span style="color:#8b949e;font-size:13px;">Topps Auto</span>
+                        <span style="color:#79c0ff;font-weight:600;font-size:13px;">{p['topps']}</span>
+                    </div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
 
 st.success(f"Updated {datetime.now().strftime('%I:%M %p')}")
