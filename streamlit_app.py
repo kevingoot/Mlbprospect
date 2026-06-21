@@ -5,7 +5,7 @@ import os
 
 st.set_page_config(page_title="MLB Prospect Analyzer", page_icon="⚾", layout="wide")
 
-# Data (easy to expand)
+# Data
 data = [
     {"player_name": "Jesús Made", "position": "SS", "team": "MIL", "rank": 1, "current_stats": 2.8, "base_stats": 2.3, "risk_score": 30},
     {"player_name": "Colt Emerson", "position": "SS", "team": "SEA", "rank": 2, "current_stats": 2.7, "base_stats": 2.2, "risk_score": 32},
@@ -13,8 +13,6 @@ data = [
     {"player_name": "Eli Willits", "position": "SS", "team": "WSN", "rank": 4, "current_stats": 2.5, "base_stats": 2.0, "risk_score": 42},
     {"player_name": "Max Clark", "position": "OF", "team": "DET", "rank": 5, "current_stats": 2.4, "base_stats": 2.0, "risk_score": 38},
     {"player_name": "Franklin Arias", "position": "SS", "team": "BOS", "rank": 6, "current_stats": 2.5, "base_stats": 2.1, "risk_score": 36},
-    {"player_name": "Kevin McGonigle", "position": "SS", "team": "DET", "rank": 7, "current_stats": 2.3, "base_stats": 1.9, "risk_score": 45},
-    {"player_name": "Konnor Griffin", "position": "SS/OF", "team": "PIT", "rank": 8, "current_stats": 2.6, "base_stats": 2.0, "risk_score": 40},
 ]
 
 df = pd.DataFrame(data)
@@ -32,12 +30,12 @@ df = calculate_scores(df)
 
 # UI
 st.title("⚾ MLB Prospect Analyzer")
-st.caption("Trade Show Edition • Tap name for detailed breakdown")
+st.caption("Trade Show Edition • Tap name for popup details")
 
 with st.sidebar:
     if st.button("🔄 Weekly Refresh", type="primary", use_container_width=True):
         st.cache_data.clear()
-        st.success("✅ List updated!")
+        st.success("✅ Refreshed!")
 
     search = st.text_input("🔍 Search Player")
 
@@ -56,25 +54,31 @@ for _, row in filtered.iterrows():
     with col3:
         st.write(row['recommendation'])
 
-# Popup-style Detail Box
+# True Popup Detail (separate box)
 if st.session_state.get("selected_player"):
     player = st.session_state.selected_player
     row = df[df['player_name'] == player].iloc[0]
     
-    with st.expander(f"📇 Detailed Breakdown: {player}", expanded=True):
-        st.write(f"**{row['position']} • {row['team']}** | Call-up Score: **{row['call_up_score']}**")
-        st.write(f"Recommendation: **{row['recommendation']}**")
-        
-        st.divider()
-        st.subheader("Card Portfolio (Current Variations)")
-        st.write("**2026 Bowman Chrome** - Refractor → Market: $25-$80")
-        st.write("**2026 Topps Series 1** - Auto → Market: $80-$250")
-        st.write("**2026 Bowman** - Base → Market: $15-$45")
-        
-        st.info("Full card images & real-time prices via Cardsight coming soon")
-        
-        if st.button("Close Detail", type="secondary"):
-            st.session_state.selected_player = None
-            st.rerun()
+    st.divider()
+    st.header(f"📇 {player} — Detailed Breakdown")
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        st.write(f"**Position:** {row['position']}")
+        st.write(f"**Team:** {row['team']}")
+        st.write(f"**Rank:** {row['rank']}")
+    with col2:
+        st.metric("Call-up Score", row['call_up_score'])
+        st.write(f"**Recommendation:** {row['recommendation']}")
+    
+    st.divider()
+    st.subheader("Current Card Variations")
+    st.write("**2026 Bowman Chrome** - Refractor → Market: $25-$80")
+    st.write("**2026 Topps Series 1** - Auto → Market: $80-$250")
+    st.write("**2026 Bowman** - Base → Market: $15-$45")
+    
+    if st.button("Close Popup", type="secondary"):
+        st.session_state.selected_player = None
+        st.rerun()
 
 st.success(f"Last updated: {datetime.now().strftime('%b %d, %I:%M %p')}")
