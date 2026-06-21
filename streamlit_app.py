@@ -123,4 +123,9 @@ else:
     st.link_button("Buy on Amazon (Affiliate)", "https://www.amazon.com")
     
     st.write("**2026 Topps Update Series** – Release: August 2026")
-    st.link_button("
+    st.link_button("Buy on eBay (Affiliate)", "https://www.ebay.com")
+    
+    st.write("**2026 Bowman 1st Edition** – Release: September 2026")
+    st.link_button("Pre-order on Fanatics", "https://www.fanatics.com")
+
+st.success(f"Last updated: {datetime.now().strftime('%b %d, %I:%M %p')}")
