@@ -30,7 +30,7 @@ df = calculate_scores(df)
 # Main List View
 if "selected_player" not in st.session_state or st.session_state.selected_player is None:
     st.title("⚾ MLB Prospect Analyzer")
-    st.caption("Trade Show Edition • Tap 'View' for details")
+    st.caption("Trade Show Edition • Tap 'View' or recommendation for details")
 
     with st.sidebar:
         if st.button("🔄 Weekly Refresh", type="primary", use_container_width=True):
@@ -51,7 +51,8 @@ if "selected_player" not in st.session_state or st.session_state.selected_player
         with col2:
             st.metric("Score", row['call_up_score'])
         with col3:
-            st.write(row['recommendation'])
+            if st.button(row['recommendation'], key=f"rec_main_{row['player_name']}"):
+                st.session_state.selected_player = row['player_name']
         with col4:
             if st.button("View", key=row['player_name']):
                 st.session_state.selected_player = row['player_name']
