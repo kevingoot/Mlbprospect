@@ -24,12 +24,12 @@ if "current_team" not in st.session_state:
 
 if st.session_state.current_team is None:
     st.subheader("Select Team")
-    cols = st.columns(5)
-    for i, (code, color, name) in enumerate(teams):
-        with cols[i % 5]:
-            if st.button(f"{code} {name}", key=code, use_container_width=True):
-                st.session_state.current_team = code
-                st.rerun()
+    for code, color, name in teams:
+        st.markdown(f"""
+        <a href="#" onclick="window.location.href='?team={code}'" style="background-color:{color}; color:white; padding:10px; border-radius:8px; display:block; margin:5px; text-align:center; text-decoration:none;">
+            {code} {name}
+        </a>
+        """, unsafe_allow_html=True)
 else:
     team = st.session_state.current_team
     if st.button("← Back to Teams"):
