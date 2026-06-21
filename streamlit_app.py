@@ -60,4 +60,4 @@ for _, row in filtered.iterrows():
 # Detail Page
 if st.session_state.get("selected_player"):
     player = st.session_state.selected_player
-    row = df[df['player_name']]
+    row = df[df['player_name']
