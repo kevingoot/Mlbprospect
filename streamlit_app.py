@@ -5,19 +5,6 @@ import os
 
 st.set_page_config(page_title="MLB Prospect Analyzer", page_icon="⚾", layout="wide")
 
-CARDSIGHT_KEY = st.secrets.get("CARDSIGHT_API_KEY", "") or os.environ.get("CARDSIGHT_API_KEY", "")
-
-def get_card_details(player_name):
-    """Simple reliable card mock for now (images fixed)"""
-    return [
-        {"set": "2026 Bowman Chrome", "type": "Refractor", "price": "$25-$80", 
-         "image": "https://picsum.photos/id/1015/320/420"},
-        {"set": "2026 Topps Series 1", "type": "Auto", "price": "$80-$250", 
-         "image": "https://picsum.photos/id/201/320/420"},
-        {"set": "2026 Bowman", "type": "Base", "price": "$15-$45", 
-         "image": "https://picsum.photos/id/237/320/420"},
-    ]
-
 # Data
 data = [
     {"player_name": "Jesús Made", "position": "SS", "team": "MIL", "current_stats": 2.8, "base_stats": 2.3, "risk_score": 30},
@@ -43,12 +30,12 @@ df = calculate_scores(df)
 
 # UI
 st.title("⚾ MLB Prospect Analyzer")
-st.caption("Trade Show Edition • Tap name for card details")
+st.caption("Trade Show Edition • Tap name for details")
 
 with st.sidebar:
-    if st.button("🔄 Refresh Card Data", type="primary", use_container_width=True):
+    if st.button("🔄 Refresh Data", type="primary", use_container_width=True):
         st.cache_data.clear()
-        st.success("✅ Refreshed!")
+        st.success("✅ Data refreshed!")
 
     search = st.text_input("🔍 Search Player")
 
@@ -67,7 +54,7 @@ for _, row in filtered.iterrows():
     with col3:
         st.write(row['recommendation'])
 
-# Card Details
+# Card Details (Text-only for speed)
 if st.session_state.get("selected_player"):
     player = st.session_state.selected_player
     row = df[df['player_name'] == player].iloc[0]
@@ -76,14 +63,15 @@ if st.session_state.get("selected_player"):
     st.header(f"📇 {player} — Card Portfolio")
     st.write(f"{row['position']} • {row['team']} | **{row['call_up_score']}** Score")
     
-    cards = get_card_details(player)
-    for card in cards:
-        st.image(card["image"], width=320)
-        st.subheader(card["set"])
-        st.write(f"**{card['type']}**")
-        st.success(f"Market: {card['price']}")
-        st.divider()
-
+    st.subheader("Recent Cards (Mock)")
+    st.write("**2026 Bowman Chrome** - Refractor")
+    st.success("Market: $25-$80")
+    st.write("**2026 Topps Series 1** - Auto")
+    st.success("Market: $80-$250")
+    st.write("**2026 Bowman** - Base")
+    st.success("Market: $15-$45")
+    
+    st.divider()
     if st.button("← Back to List"):
         st.session_state.selected_player = None
         st.rerun()
