@@ -3,6 +3,33 @@ from datetime import datetime
 
 st.set_page_config(page_title="MLB Prospect Analyzer", page_icon="⚾", layout="wide")
 
+st.markdown("""
+<style>
+[data-testid="stAppViewContainer"] { background: #0d1117 !important; }
+[data-testid="stHeader"] { background: #0d1117 !important; }
+section[data-testid="stMain"] { background: #0d1117 !important; }
+.block-container { padding: 1rem !important; max-width: 100% !important; }
+h1, h2, h3, h4 { color: #ffffff !important; }
+p { color: #e6edf3 !important; }
+.stButton > button {
+    background: #1c2a3e !important;
+    color: #79c0ff !important;
+    border: 1px solid #30475e !important;
+    border-radius: 8px !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    padding: 0.5rem 0.75rem !important;
+    width: 100% !important;
+    text-align: left !important;
+}
+[data-testid="stSuccess"] > div {
+    background: #0d2818 !important;
+    color: #3fb950 !important;
+    border: 1px solid #238636 !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
 TEAMS = [
     ("ARI","Diamondbacks"), ("ATL","Braves"),    ("BAL","Orioles"),
     ("BOS","Red Sox"),      ("CHC","Cubs"),       ("CHW","White Sox"),
@@ -125,89 +152,73 @@ if "current_team" not in st.session_state:
 if "selected_player" not in st.session_state:
     st.session_state.selected_player = None
 
-# Build CSS for every team button individually
-team_css = """
-<style>
-[data-testid="stAppViewContainer"] { background: #0d1117 !important; }
-[data-testid="stHeader"] { background: #0d1117 !important; }
-section[data-testid="stMain"] { background: #0d1117 !important; }
-.block-container { padding: 1rem !important; max-width: 100% !important; }
-h1, h2, h3, h4 { color: #ffffff !important; }
-p, label { color: #e6edf3 !important; }
-
-/* prospect buttons */
-.stButton > button {
-    background: #1c2a3e !important;
-    color: #79c0ff !important;
-    border: 1px solid #30475e !important;
-    border-radius: 8px !important;
-    font-size: 14px !important;
-    font-weight: 600 !important;
-    padding: 0.5rem 0.75rem !important;
-    width: 100% !important;
-    text-align: left !important;
-    line-height: 1.4 !important;
-}
-[data-testid="stSuccess"] > div {
-    background: #0d2818 !important;
-    color: #3fb950 !important;
-    border: 1px solid #238636 !important;
-}
-"""
-
-for code, _ in TEAMS:
-    color = TEAM_COLORS.get(code, "#1c2a3e")
-    team_css += f"""
-div[data-testid="stButton"] > button[kind="secondary"][data-testid="baseButton-secondary"]:has(div:contains("{code}")) {{
-    background: {color} !important;
-    color: #ffffff !important;
-    border: 1px solid rgba(255,255,255,0.2) !important;
-    border-radius: 10px !important;
-    font-size: 15px !important;
-    font-weight: 700 !important;
-    text-align: center !important;
-    padding: 14px 8px !important;
-    min-height: 60px !important;
-}}
-"""
-
-# Use key-based targeting instead — inject per-key styles
-team_css += "</style>"
-
-# Simpler approach: inject one style block targeting by key attribute
-targeted_css = "<style>\n[data-testid='stAppViewContainer'] { background: #0d1117 !important; }\n[data-testid='stHeader'] { background: #0d1117 !important; }\nsection[data-testid='stMain'] { background: #0d1117 !important; }\n.block-container { padding: 1rem !important; max-width: 100% !important; }\nh1, h2, h3, h4 { color: #ffffff !important; }\np, label, div { color: #e6edf3; }\n.stButton > button {\n    background: #1c2a3e !important;\n    color: #79c0ff !important;\n    border: 1px solid #30475e !important;\n    border-radius: 8px !important;\n    font-size: 14px !important;\n    font-weight: 600 !important;\n    padding: 0.5rem 0.75rem !important;\n    width: 100% !important;\n    text-align: left !important;\n}\n[data-testid='stSuccess'] > div {\n    background: #0d2818 !important;\n    color: #3fb950 !important;\n    border: 1px solid #238636 !important;\n}\n"
-
-for code, _ in TEAMS:
-    color = TEAM_COLORS.get(code, "#1c2a3e")
-    targeted_css += f"button[data-testid='baseButton-secondary'][key='team_{code}'] {{ background: {color} !important; color: #ffffff !important; border: 1px solid rgba(255,255,255,0.2) !important; border-radius: 10px !important; font-weight: 700 !important; font-size: 15px !important; text-align: center !important; padding: 14px 8px !important; min-height: 60px !important; }}\n"
-
-targeted_css += "</style>"
-st.markdown(targeted_css, unsafe_allow_html=True)
-
-# ── TEAM SELECTION ─────────────────────────────────────────────────────────
+# ── TEAM SELECTION ──────────────────────────────────────────────────────────
 if st.session_state.current_team is None:
     st.markdown("## ⚾ MLB Prospect Analyzer")
     st.markdown("*Trade Show Edition — Tap a team*")
 
-    # Inject per-button colors via nth-child targeting
-    # Build a style block matching button position in the grid
-    btn_colors = "<style>\n"
-    for i, (code, _) in enumerate(TEAMS):
-        color = TEAM_COLORS.get(code, "#1c2a3e")
-        # Target each button by its position among all stButton divs on this page
-        btn_colors += f".stButton:nth-of-type({i+1}) > button {{ background: {color} !important; color: #ffffff !important; border: 1px solid rgba(255,255,255,0.25) !important; border-radius: 10px !important; font-weight: 700 !important; font-size: 15px !important; text-align: center !important; min-height: 60px !important; line-height: 1.3 !important; }}\n"
-    btn_colors += "</style>"
-    st.markdown(btn_colors, unsafe_allow_html=True)
+    # Render pairs of teams as rows using HTML layout + real buttons underneath
+    # We inject a unique div id wrapper per button and style each individually
+    pairs = [(TEAMS[i], TEAMS[i+1] if i+1 < len(TEAMS) else None) for i in range(0, len(TEAMS), 2)]
 
-    cols = st.columns(2)
-    for i, (code, name) in enumerate(TEAMS):
-        with cols[i % 2]:
-            if st.button(f"{code}\n{name}", key=f"team_{code}", use_container_width=True):
-                st.session_state.current_team = code
-                st.session_state.selected_player = None
-                st.rerun()
+    for left, right in pairs:
+        cols = st.columns(2)
+        for col, team_tuple in zip(cols, [left, right]):
+            if team_tuple is None:
+                continue
+            code, name = team_tuple
+            color = TEAM_COLORS.get(code, "#1c2a3e")
+            with col:
+                # Inject style + button together so the style scopes correctly
+                st.markdown(f"""
+                <style>
+                div[data-testid="stButton"]:has(button[kind="secondary"]) button[kind="secondary"] {{
+                    text-align: center !important;
+                }}
+                .btn-{code} + div .stButton > button,
+                .btn-{code} ~ div .stButton > button {{
+                    background: {color} !important;
+                }}
+                </style>
+                <div class="btn-{code}"></div>
+                """, unsafe_allow_html=True)
+                if st.button(f"{code}\n{name}", key=f"team_{code}", use_container_width=True):
+                    st.session_state.current_team = code
+                    st.session_state.selected_player = None
+                    st.rerun()
 
-# ── TEAM PROSPECTS ─────────────────────────────────────────────────────────
+    # Override all team buttons with their colors using a JS injection
+    js_colors = {code: color for code, color in TEAM_COLORS.items()}
+    color_script = "<script>\n(function() {\n  const map = " + str(js_colors).replace("'", '"') + ";\n"
+    color_script += """
+  function styleButtons() {
+    const buttons = document.querySelectorAll('button[kind="secondary"]');
+    buttons.forEach(btn => {
+      const text = btn.innerText.trim();
+      const code = text.split('\\n')[0].trim();
+      if (map[code]) {
+        btn.style.setProperty('background', map[code], 'important');
+        btn.style.setProperty('color', '#ffffff', 'important');
+        btn.style.setProperty('border', '1px solid rgba(255,255,255,0.2)', 'important');
+        btn.style.setProperty('border-radius', '10px', 'important');
+        btn.style.setProperty('font-weight', '700', 'important');
+        btn.style.setProperty('font-size', '15px', 'important');
+        btn.style.setProperty('text-align', 'center', 'important');
+        btn.style.setProperty('min-height', '60px', 'important');
+        btn.style.setProperty('line-height', '1.3', 'important');
+      }
+    });
+  }
+  styleButtons();
+  setTimeout(styleButtons, 300);
+  setTimeout(styleButtons, 800);
+  const obs = new MutationObserver(styleButtons);
+  obs.observe(document.body, {childList: true, subtree: true});
+})();
+</script>"""
+    st.markdown(color_script, unsafe_allow_html=True)
+
+# ── TEAM PROSPECTS ──────────────────────────────────────────────────────────
 else:
     team = st.session_state.current_team
     team_name = next(n for c, n in TEAMS if c == team)
@@ -231,24 +242,15 @@ else:
     for p in prospects:
         score = p["score"]
         if score >= 90:
-            dot = "🟢"
-            badge_bg = "#0d2818"
-            badge_color = "#3fb950"
+            dot = "🟢"; badge_bg = "#0d2818"; badge_color = "#3fb950"
         elif score >= 85:
-            dot = "🟡"
-            badge_bg = "#2d1f00"
-            badge_color = "#d29922"
+            dot = "🟡"; badge_bg = "#2d1f00"; badge_color = "#d29922"
         else:
-            dot = "🔴"
-            badge_bg = "#2d0c0c"
-            badge_color = "#f85149"
+            dot = "🔴"; badge_bg = "#2d0c0c"; badge_color = "#f85149"
 
-        label = f"{dot} {p['player']} ({p['pos']})  |  Score: {score}"
-        if st.button(label, key=f"p_{p['player']}", use_container_width=True):
-            if st.session_state.selected_player == p["player"]:
-                st.session_state.selected_player = None
-            else:
-                st.session_state.selected_player = p["player"]
+        if st.button(f"{dot} {p['player']} ({p['pos']})  |  Score: {score}",
+                     key=f"p_{p['player']}", use_container_width=True):
+            st.session_state.selected_player = None if st.session_state.selected_player == p["player"] else p["player"]
             st.rerun()
 
         if st.session_state.selected_player == p["player"]:
@@ -256,8 +258,7 @@ else:
             <div style="background:#161b22;border:1px solid {color};border-radius:10px;
                  padding:16px 20px;margin:4px 0 12px 0;">
                 <div style="color:#ffffff;font-size:20px;font-weight:700;margin-bottom:12px;">
-                    {p['player']}
-                    <span style="color:rgba(255,255,255,0.5);font-size:14px;"> · {p['pos']}</span>
+                    {p['player']} <span style="color:rgba(255,255,255,0.5);font-size:14px;">· {p['pos']}</span>
                 </div>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
                     <div style="background:#0d1117;border-radius:8px;padding:10px 12px;border:1px solid #30475e;">
