@@ -5,21 +5,19 @@ from datetime import datetime
 st.set_page_config(page_title="MLB Prospect Analyzer", page_icon="⚾", layout="wide")
 
 st.title("MLB Prospect Analyzer")
-st.caption("Trade Show Edition • Select a team")
+st.caption("Trade Show Edition • Tap a team")
 
-# Team list at the bottom
-teams = ["MIL", "SEA", "OAK", "WSN", "DET", "BOS", "CLE", "PIT", "SD", "NYM"]
+teams = ["MIL", "SEA", "OAK", "WSN", "DET", "BOS", "CLE", "PIT", "SD", "NYM", "NYY", "LAD", "HOU", "PHI", "ATL"]
 
 if "current_team" not in st.session_state:
     st.session_state.current_team = None
 
-# Main page
 if st.session_state.current_team is None:
-    st.subheader("Select a Team")
-    cols = st.columns(3)
+    st.subheader("Select Team")
+    cols = st.columns(5)
     for i, team in enumerate(teams):
-        with cols[i % 3]:
-            if st.button(team, key=team):
+        with cols[i % 5]:
+            if st.button(team, key=team, use_container_width=True):
                 st.session_state.current_team = team
                 st.rerun()
 else:
@@ -28,17 +26,17 @@ else:
         st.session_state.current_team = None
         st.rerun()
     
-    st.title(f"{team} Top Prospects")
+    st.title(f"{team} Top 10 Prospects")
     
-    # Example top 10 for the team
+    # Example prospects
     prospects = [
-        {"player": "Jesús Made", "position": "SS", "score": 92},
-        {"player": "Colt Emerson", "position": "SS", "score": 88},
-        {"player": "Leo De Vries", "position": "SS", "score": 85},
+        {"player": "Jesús Made", "pos": "SS", "score": 92},
+        {"player": "Colt Emerson", "pos": "SS", "score": 88},
+        {"player": "Leo De Vries", "pos": "SS", "score": 85},
     ]
     
     for p in prospects:
-        if st.button(p['player'], key=p['player']):
+        if st.button(f"{p['player']} ({p['pos']}) - Score: {p['score']}", key=p['player']):
             st.session_state.selected_player = p['player']
     
     if "selected_player" in st.session_state:
