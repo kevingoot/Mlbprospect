@@ -23,9 +23,7 @@ h1, h2, h3, h4 { color: #ffffff !important; }
     width: 100% !important;
     text-align: left !important;
 }
-.stButton > button:active {
-    background: #2d4a6e !important;
-}
+.stButton > button:active { background: #2d4a6e !important; }
 [data-testid="stSuccess"] > div {
     background: #0d2818 !important;
     color: #3fb950 !important;
@@ -156,6 +154,13 @@ if "current_team" not in st.session_state:
 if "selected_player" not in st.session_state:
     st.session_state.selected_player = None
 
+# Check for query param set by tile click
+params = st.query_params
+if "team" in params and st.session_state.current_team is None:
+    st.session_state.current_team = params["team"]
+    st.query_params.clear()
+    st.rerun()
+
 # ── TEAM SELECTION ─────────────────────────────────────────────────────────
 if st.session_state.current_team is None:
     st.markdown("## ⚾ MLB Prospect Analyzer")
@@ -164,26 +169,25 @@ if st.session_state.current_team is None:
     tiles_html = ""
     for code, name in TEAMS:
         color = TEAM_COLORS.get(code, "#1c2a3e")
-        tiles_html += f"""<div style="background:{color};border-radius:10px;padding:10px 12px;
-            text-align:center;border:1px solid rgba(255,255,255,0.15);">
-            <div style="color:#ffffff;font-weight:700;font-size:16px;">{code}</div>
-            <div style="color:rgba(255,255,255,0.85);font-size:12px;">{name}</div>
+        tiles_html += f"""
+        <div onclick="window.top.location.href = window.top.location.pathname + '?team={code}'"
+             style="background:{color};border-radius:10px;padding:14px 12px;
+                    text-align:center;border:1px solid rgba(255,255,255,0.15);
+                    cursor:pointer;-webkit-tap-highlight-color:rgba(255,255,255,0.2);">
+            <div style="color:#ffffff;font-weight:700;font-size:17px;letter-spacing:0.5px;">{code}</div>
+            <div style="color:rgba(255,255,255,0.85);font-size:12px;margin-top:2px;">{name}</div>
         </div>"""
 
     components.html(f"""
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:4px;">
+    <!DOCTYPE html>
+    <html>
+    <body style="margin:0;padding:4px;background:transparent;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
         {tiles_html}
     </div>
-    """, height=720, scrolling=True)
-
-    st.markdown("**Select your team:**")
-    cols = st.columns(2)
-    for i, (code, name) in enumerate(TEAMS):
-        with cols[i % 2]:
-            if st.button(f"{code} — {name}", key=f"btn_{code}", use_container_width=True):
-                st.session_state.current_team = code
-                st.session_state.selected_player = None
-                st.rerun()
+    </body>
+    </html>
+    """, height=740, scrolling=True)
 
 # ── TEAM PROSPECTS ─────────────────────────────────────────────────────────
 else:
