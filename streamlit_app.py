@@ -1,13 +1,23 @@
 import streamlit as st
-import pandas as pd
 from datetime import datetime
 
 st.set_page_config(page_title="MLB Prospect Analyzer", page_icon="⚾", layout="wide")
 
 st.title("MLB Prospect Analyzer")
-st.caption("Trade Show Edition • Tap a team")
+st.caption("Trade Show Edition • Tap team")
 
-teams = ["MIL", "SEA", "OAK", "WSN", "DET", "BOS", "CLE", "PIT", "SD", "NYM", "NYY", "LAD", "HOU", "PHI", "ATL"]
+teams = [
+    ("MIL", "#0A2E5A", "Brewers"),
+    ("SEA", "#0C2C56", "Mariners"),
+    ("OAK", "#003087", "Athletics"),
+    ("WSN", "#AB0003", "Nationals"),
+    ("DET", "#0C2C56", "Tigers"),
+    ("BOS", "#BD3039", "Red Sox"),
+    ("CLE", "#E50022", "Guardians"),
+    ("PIT", "#FDB827", "Pirates"),
+    ("SD", "#2F3C4A", "Padres"),
+    ("NYM", "#FF5910", "Mets"),
+]
 
 if "current_team" not in st.session_state:
     st.session_state.current_team = None
@@ -15,10 +25,10 @@ if "current_team" not in st.session_state:
 if st.session_state.current_team is None:
     st.subheader("Select Team")
     cols = st.columns(5)
-    for i, team in enumerate(teams):
+    for i, (code, color, name) in enumerate(teams):
         with cols[i % 5]:
-            if st.button(team, key=team, use_container_width=True):
-                st.session_state.current_team = team
+            if st.button(f"{code} {name}", key=code, use_container_width=True):
+                st.session_state.current_team = code
                 st.rerun()
 else:
     team = st.session_state.current_team
@@ -26,9 +36,8 @@ else:
         st.session_state.current_team = None
         st.rerun()
     
-    st.title(f"{team} Top 10 Prospects")
+    st.title(f"{team} Top Prospects")
     
-    # Example prospects
     prospects = [
         {"player": "Jesús Made", "pos": "SS", "score": 92},
         {"player": "Colt Emerson", "pos": "SS", "score": 88},
@@ -36,7 +45,7 @@ else:
     ]
     
     for p in prospects:
-        if st.button(f"{p['player']} ({p['pos']}) - Score: {p['score']}", key=p['player']):
+        if st.button(f"{p['player']} ({p['pos']}) - {p['score']}", key=p['player']):
             st.session_state.selected_player = p['player']
     
     if "selected_player" in st.session_state:
