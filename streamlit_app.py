@@ -27,59 +27,96 @@ def calculate_scores(df):
 
 df = calculate_scores(df)
 
-# UI
-st.title("⚾ MLB Prospect Analyzer")
-st.caption("Trade Show Edition • Tap name for details")
+# Main List View
+if "selected_player" not in st.session_state or st.session_state.selected_player is None:
+    st.title("⚾ MLB Prospect Analyzer")
+    st.caption("Trade Show Edition • Tap any player for full breakdown")
 
-with st.sidebar:
-    if st.button("🔄 Weekly Refresh", type="primary", use_container_width=True):
-        st.cache_data.clear()
-        st.success("✅ Refreshed!")
+    with st.sidebar:
+        if st.button("🔄 Weekly Refresh", type="primary", use_container_width=True):
+            st.cache_data.clear()
+            st.success("✅ Refreshed!")
 
-    search = st.text_input("🔍 Search Player")
+        search = st.text_input("🔍 Search Player")
 
-filtered = df.copy()
-if search:
-    filtered = filtered[filtered["player_name"].str.contains(search, case=False)]
+    filtered = df.copy()
+    if search:
+        filtered = filtered[filtered["player_name"].str.contains(search, case=False)]
 
-st.subheader(f"Prospects ({len(filtered)} shown)")
-for _, row in filtered.iterrows():
-    col1, col2, col3 = st.columns([5, 2, 2])
-    with col1:
-        if st.button(f"**{row['player_name']}** ({row['team']})", key=row['player_name']):
-            st.session_state.selected_player = row['player_name']
-    with col2:
-        st.metric("Call-up Score", row['call_up_score'])
-    with col3:
-        st.write(row['recommendation'])
+    st.subheader(f"Prospects ({len(filtered)} shown)")
+    for _, row in filtered.iterrows():
+        col1, col2, col3 = st.columns([5, 2, 2])
+        with col1:
+            if st.button(f"**{row['player_name']}** ({row['team']})", key=row['player_name']):
+                st.session_state.selected_player = row['player_name']
+        with col2:
+            st.metric("Call-up Score", row['call_up_score'])
+        with col3:
+            st.write(row['recommendation'])
 
-# Detail Box (separate, doesn't hide list)
-if st.session_state.get("selected_player"):
+    # Full Spreadsheet
+    st.divider()
+    st.subheader("Full Prospect Spreadsheet")
+    spreadsheet_df = df.sort_values("rank")
+    st.dataframe(
+        spreadsheet_df[["rank", "player_name", "position", "team", "call_up_score", "recommendation"]],
+        use_container_width=True,
+        hide_index=True
+    )
+
+# Player Detail Page (Separate View)
+else:
     player = st.session_state.selected_player
     row = df[df['player_name'] == player].iloc[0]
     
-    with st.expander(f"📇 Detailed Breakdown: {player}", expanded=True):
-        st.write(f"**{row['position']} • {row['team']}** | Call-up Score: **{row['call_up_score']}**")
-        st.write(f"Recommendation: **{row['recommendation']}**")
-        
-        st.divider()
-        st.subheader("Current Card Variations")
-        st.write("**2026 Bowman Chrome** - Refractor → $25-$80")
-        st.write("**2026 Topps Series 1** - Auto → $80-$250")
-        st.write("**2026 Bowman** - Base → $15-$45")
-        
-        if st.button("Close Detail"):
-            st.session_state.selected_player = None
-            st.rerun()
-
-# Spreadsheet at the bottom
-st.divider()
-st.subheader("Full Prospect Spreadsheet")
-spreadsheet_df = df.sort_values("rank")
-st.dataframe(
-    spreadsheet_df[["rank", "player_name", "position", "team", "call_up_score", "recommendation"]],
-    use_container_width=True,
-    hide_index=True
-)
-
-st.success(f"Last updated: {datetime.now().strftime('%b %d, %I:%M %p')}")
+    # Back button at top
+    if st.button("← Back to Main List", type="secondary"):
+        st.session_state.selected_player = None
+        st.rerun()
+    
+    st.title(f"📇 {player}")
+    st.write(f"**{row['position']} • {row['team']}** | Rank: **{row['rank']}** | Call-up Score: **{row['call_up_score']}**")
+    
+    st.divider()
+    
+    # Popular Cards Section with Pictures
+    st.header("Most Popular Cards")
+    
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.image("https://picsum.photos/id/1015/300/420", width=280)
+        st.write("**2026 Bowman Chrome Refractor**")
+        st.success("Price Range: $25 – $80")
+    with col2:
+        st.image("https://picsum.photos/id/201/300/420", width=280)
+        st.write("**2026 Topps Series 1 Auto**")
+        st.success("Price Range: $80 – $250")
+    with col3:
+        st.image("https://picsum.photos/id/237/300/420", width=280)
+        st.write("**2026 Bowman Base**")
+        st.success("Price Range: $15 – $45")
+    
+    st.divider()
+    
+    # Full Spreadsheet of their cards
+    st.header("All Current Card Variations")
+    card_data = pd.DataFrame({
+        "Set": ["2026 Bowman Chrome", "2026 Topps Series 1", "2026 Bowman", "2026 Bowman Chrome"],
+        "Variation": ["Refractor", "Auto", "Base", "Base"],
+        "Price Range": ["$25-$80", "$80-$250", "$15-$45", "$20-$60"],
+        "Trend": ["Rising", "Stable", "Stable", "Rising"]
+    })
+    st.dataframe(card_data, use_container_width=True, hide_index=True)
+    
+    st.divider()
+    
+    # Upcoming Sets with Affiliate Links
+    st.header("Upcoming Card Sets")
+    st.write("**2026 Bowman Chrome** – Release: July 2026")
+    st.link_button("Buy on Amazon (Affiliate)", "https://amazon.com")
+    
+    st.write("**2026 Topps Update Series** – Release: August 2026")
+    st.link_button("Buy on eBay (Affiliate)", "https://ebay.com")
+    
+    st.write("**2026 Bowman 1st Edition** – Release: September 2026")
+    st.link
