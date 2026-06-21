@@ -30,7 +30,7 @@ df = calculate_scores(df)
 # Main List View
 if "selected_player" not in st.session_state or st.session_state.selected_player is None:
     st.title("⚾ MLB Prospect Analyzer")
-    st.caption("Trade Show Edition • Tap name for full breakdown")
+    st.caption("Trade Show Edition • Tap name or spreadsheet row for details")
 
     with st.sidebar:
         if st.button("🔄 Weekly Refresh", type="primary", use_container_width=True):
@@ -54,22 +54,32 @@ if "selected_player" not in st.session_state or st.session_state.selected_player
         with col3:
             st.write(row['recommendation'])
 
-    # Full Spreadsheet
     st.divider()
-    st.subheader("Full Prospect Spreadsheet")
-    spreadsheet_df = df.sort_values("rank")
-    st.dataframe(
-        spreadsheet_df[["rank", "player_name", "position", "team", "call_up_score", "recommendation"]],
+    st.subheader("Full Prospect Spreadsheet (Click any row)")
+    
+    # Clickable spreadsheet
+    spreadsheet_df = df.sort_values("rank").copy()
+    spreadsheet_df["View"] = "👁️ View Details"
+    
+    # Use data_editor for click simulation (or just buttons)
+    edited = st.data_editor(
+        spreadsheet_df[["rank", "player_name", "position", "team", "call_up_score", "recommendation", "View"]],
         use_container_width=True,
-        hide_index=True
+        hide_index=True,
+        disabled=["rank", "player_name", "position", "team", "call_up_score", "recommendation"]
     )
+    
+    # Detect row click (simple way)
+    for i, row in spreadsheet_df.iterrows():
+        if st.button(f"View {row['player_name']}", key=f"spread_{i}"):
+            st.session_state.selected_player = row['player_name']
+            st.rerun()
 
-# Separate Detail Page
+# Detail Page
 else:
     player = st.session_state.selected_player
     row = df[df['player_name'] == player].iloc[0]
     
-    # Back button
     if st.button("← Back to Main List", type="secondary"):
         st.session_state.selected_player = None
         st.rerun()
@@ -79,7 +89,6 @@ else:
     
     st.divider()
     
-    # Popular Cards with Pictures
     st.header("Most Popular Cards")
     col1, col2, col3 = st.columns(3)
     with col1:
@@ -97,7 +106,6 @@ else:
     
     st.divider()
     
-    # Full Card Spreadsheet
     st.header("All Current Card Variations")
     card_data = pd.DataFrame({
         "Set": ["2026 Bowman Chrome", "2026 Topps Series 1", "2026 Bowman", "2026 Bowman Chrome"],
@@ -109,7 +117,6 @@ else:
     
     st.divider()
     
-    # Upcoming Sets with Affiliate Links
     st.header("Upcoming Card Sets")
     st.write("**2026 Bowman Chrome** – Release: July 2026")
     st.link_button("Buy on Amazon (Affiliate)", "https://www.amazon.com")
