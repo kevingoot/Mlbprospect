@@ -7,16 +7,16 @@ st.title("MLB Prospect Analyzer")
 st.caption("Trade Show Edition • Tap team")
 
 teams = [
-    ("ARI", "#A71930", "Diamondbacks"), ("ATL", "#CE1141", "Braves"), ("BAL", "#DF4601", "Orioles"),
-    ("BOS", "#BD3039", "Red Sox"), ("CHC", "#0E3386", "Cubs"), ("CHW", "#000000", "White Sox"),
-    ("CIN", "#C6011F", "Reds"), ("CLE", "#E50022", "Guardians"), ("COL", "#33006F", "Rockies"),
-    ("DET", "#0C2C56", "Tigers"), ("HOU", "#EB6E1F", "Astros"), ("KC", "#004874", "Royals"),
-    ("LAA", "#BA002F", "Angels"), ("LAD", "#005A9C", "Dodgers"), ("MIA", "#00A3E0", "Marlins"),
-    ("MIL", "#0A2E5A", "Brewers"), ("MIN", "#002B5C", "Twins"), ("NYM", "#FF5910", "Mets"),
-    ("NYY", "#0C2C56", "Yankees"), ("OAK", "#003087", "Athletics"), ("PHI", "#E81828", "Phillies"),
-    ("PIT", "#FDB827", "Pirates"), ("SD", "#2F3C4A", "Padres"), ("SF", "#FD5A1E", "Giants"),
-    ("SEA", "#0C2C56", "Mariners"), ("STL", "#C41E3A", "Cardinals"), ("TB", "#8FBCE6", "Rays"),
-    ("TEX", "#C0111F", "Rangers"), ("TOR", "#134A8E", "Blue Jays"), ("WSN", "#AB0003", "Nationals"),
+    ("ARI", "Diamondbacks"), ("ATL", "Braves"), ("BAL", "Orioles"),
+    ("BOS", "Red Sox"), ("CHC", "Cubs"), ("CHW", "White Sox"),
+    ("CIN", "Reds"), ("CLE", "Guardians"), ("COL", "Rockies"),
+    ("DET", "Tigers"), ("HOU", "Astros"), ("KC", "Royals"),
+    ("LAA", "Angels"), ("LAD", "Dodgers"), ("MIA", "Marlins"),
+    ("MIL", "Brewers"), ("MIN", "Twins"), ("NYM", "Mets"),
+    ("NYY", "Yankees"), ("OAK", "Athletics"), ("PHI", "Phillies"),
+    ("PIT", "Pirates"), ("SD", "Padres"), ("SF", "Giants"),
+    ("SEA", "Mariners"), ("STL", "Cardinals"), ("TB", "Rays"),
+    ("TEX", "Rangers"), ("TOR", "Blue Jays"), ("WSN", "Nationals"),
 ]
 
 if "current_team" not in st.session_state:
@@ -25,7 +25,7 @@ if "current_team" not in st.session_state:
 if st.session_state.current_team is None:
     st.subheader("Select Team")
     cols = st.columns(3)
-    for i, (code, color, name) in enumerate(teams):
+    for i, (code, name) in enumerate(teams):
         with cols[i % 3]:
             if st.button(f"{code} {name}", key=code, use_container_width=True):
                 st.session_state.current_team = code
