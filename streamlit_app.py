@@ -24,10 +24,10 @@ if "current_team" not in st.session_state:
 
 if st.session_state.current_team is None:
     st.subheader("Select Team")
-    cols = st.columns(4)
+    cols = st.columns(3)
     for i, (code, color, name) in enumerate(teams):
-        with cols[i % 4]:
-            if st.button(f"{code}", key=code, use_container_width=True):
+        with cols[i % 3]:
+            if st.button(f"{code} {name}", key=code, use_container_width=True):
                 st.session_state.current_team = code
                 st.rerun()
 else:
