@@ -59,60 +59,15 @@ if "selected_player" not in st.session_state or st.session_state.selected_player
 
     st.divider()
     st.subheader("Full Prospect Spreadsheet")
-    spreadsheet_df = df.sort_values("rank")
-    st.dataframe(
-        spreadsheet_df[["rank", "player_name", "position", "team", "call_up_score", "recommendation"]],
-        use_container_width=True,
-        hide_index=True
-    )
-
-# Detail Page
-else:
-    player = st.session_state.selected_player
-    row = df[df['player_name'] == player].iloc[0]
+    spreadsheet_df = df.sort_values("rank").copy()
     
-    if st.button("← Back to Main List", type="secondary"):
-        st.session_state.selected_player = None
-        st.rerun()
-    
-    st.title(f"📇 {player}")
-    st.write(f"**{row['position']} • {row['team']}** | Rank: **{row['rank']}** | Call-up Score: **{row['call_up_score']}**")
-    
-    st.divider()
-    st.header("Most Popular Cards")
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.image("https://picsum.photos/id/1015/300/420", width=280)
-        st.write("**2026 Bowman Chrome Refractor**")
-        st.success("Price Range: $25 – $80")
-    with col2:
-        st.image("https://picsum.photos/id/201/300/420", width=280)
-        st.write("**2026 Topps Series 1 Auto**")
-        st.success("Price Range: $80 – $250")
-    with col3:
-        st.image("https://picsum.photos/id/237/300/420", width=280)
-        st.write("**2026 Bowman Base**")
-        st.success("Price Range: $15 – $45")
-    
-    st.divider()
-    st.header("All Current Card Variations")
-    card_data = pd.DataFrame({
-        "Set": ["2026 Bowman Chrome", "2026 Topps Series 1", "2026 Bowman", "2026 Bowman Chrome"],
-        "Variation": ["Refractor", "Auto", "Base", "Base"],
-        "Price Range": ["$25-$80", "$80-$250", "$15-$45", "$20-$60"],
-        "Trend": ["Rising", "Stable", "Stable", "Rising"]
-    })
-    st.dataframe(card_data, use_container_width=True, hide_index=True)
-    
-    st.divider()
-    st.header("Upcoming Card Sets")
-    st.write("**2026 Bowman Chrome** – Release: July 2026")
-    st.link_button("Buy on Amazon (Affiliate)", "https://www.amazon.com")
-    
-    st.write("**2026 Topps Update Series** – Release: August 2026")
-    st.link_button("Buy on eBay (Affiliate)", "https://www.ebay.com")
-    
-    st.write("**2026 Bowman 1st Edition** – Release: September 2026")
-    st.link_button("Pre-order on Fanatics", "https://www.fanatics.com")
-
-st.success(f"Last updated: {datetime.now().strftime('%b %d, %I:%M %p')}")
+    for i, row in spreadsheet_df.iterrows():
+        col1, col2, col3, col4, col5, col6 in, col7 = st.columns([1, 3, 1, 1, 1, 2, 2])
+        with col1:
+            st.write(row['rank'])
+        with col2:
+            st.write(row['player_name'])
+        with col3:
+            st.write(row['position'])
+        with col4:
+            st.write(row['team'])
