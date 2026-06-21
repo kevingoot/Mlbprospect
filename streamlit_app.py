@@ -1,36 +1,7 @@
 import streamlit as st
-import streamlit.components.v1 as components
 from datetime import datetime
 
 st.set_page_config(page_title="MLB Prospect Analyzer", page_icon="⚾", layout="wide")
-
-st.markdown("""
-<style>
-[data-testid="stAppViewContainer"] { background: #0d1117 !important; }
-[data-testid="stHeader"] { background: #0d1117 !important; }
-section[data-testid="stMain"] { background: #0d1117 !important; }
-.block-container { padding: 1rem !important; max-width: 100% !important; }
-body, p, span, div, label { color: #e6edf3 !important; }
-h1, h2, h3, h4 { color: #ffffff !important; }
-.stButton > button {
-    background: #1c2a3e !important;
-    color: #79c0ff !important;
-    border: 1px solid #30475e !important;
-    border-radius: 8px !important;
-    font-size: 14px !important;
-    font-weight: 600 !important;
-    padding: 0.4rem 0.6rem !important;
-    width: 100% !important;
-    text-align: left !important;
-}
-.stButton > button:active { background: #2d4a6e !important; }
-[data-testid="stSuccess"] > div {
-    background: #0d2818 !important;
-    color: #3fb950 !important;
-    border: 1px solid #238636 !important;
-}
-</style>
-""", unsafe_allow_html=True)
 
 TEAMS = [
     ("ARI","Diamondbacks"), ("ATL","Braves"),    ("BAL","Orioles"),
@@ -47,11 +18,11 @@ TEAMS = [
 
 TEAM_COLORS = {
     "ARI":"#A71930","ATL":"#CE1141","BAL":"#DF4601","BOS":"#BD3039",
-    "CHC":"#0E3386","CHW":"#27251F","CIN":"#C6011F","CLE":"#E31937",
+    "CHC":"#0E3386","CHW":"#3D3D3D","CIN":"#C6011F","CLE":"#E31937",
     "COL":"#33006F","DET":"#0C2340","HOU":"#EB6E1F","KC":"#004687",
     "LAA":"#BA0021","LAD":"#005A9C","MIA":"#00A3E0","MIL":"#12284B",
     "MIN":"#002B5C","NYM":"#002D72","NYY":"#003087","OAK":"#003831",
-    "PHI":"#E81828","PIT":"#FDB827","SD":"#2F241D","SF":"#FD5A1E",
+    "PHI":"#E81828","PIT":"#FDB827","SD":"#4A3728","SF":"#FD5A1E",
     "SEA":"#0C2C56","STL":"#C41E3A","TB":"#092C5C","TEX":"#003278",
     "TOR":"#134A8E","WSN":"#AB0003",
 }
@@ -154,40 +125,87 @@ if "current_team" not in st.session_state:
 if "selected_player" not in st.session_state:
     st.session_state.selected_player = None
 
-# Check for query param set by tile click
-params = st.query_params
-if "team" in params and st.session_state.current_team is None:
-    st.session_state.current_team = params["team"]
-    st.query_params.clear()
-    st.rerun()
+# Build CSS for every team button individually
+team_css = """
+<style>
+[data-testid="stAppViewContainer"] { background: #0d1117 !important; }
+[data-testid="stHeader"] { background: #0d1117 !important; }
+section[data-testid="stMain"] { background: #0d1117 !important; }
+.block-container { padding: 1rem !important; max-width: 100% !important; }
+h1, h2, h3, h4 { color: #ffffff !important; }
+p, label { color: #e6edf3 !important; }
+
+/* prospect buttons */
+.stButton > button {
+    background: #1c2a3e !important;
+    color: #79c0ff !important;
+    border: 1px solid #30475e !important;
+    border-radius: 8px !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    padding: 0.5rem 0.75rem !important;
+    width: 100% !important;
+    text-align: left !important;
+    line-height: 1.4 !important;
+}
+[data-testid="stSuccess"] > div {
+    background: #0d2818 !important;
+    color: #3fb950 !important;
+    border: 1px solid #238636 !important;
+}
+"""
+
+for code, _ in TEAMS:
+    color = TEAM_COLORS.get(code, "#1c2a3e")
+    team_css += f"""
+div[data-testid="stButton"] > button[kind="secondary"][data-testid="baseButton-secondary"]:has(div:contains("{code}")) {{
+    background: {color} !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(255,255,255,0.2) !important;
+    border-radius: 10px !important;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    text-align: center !important;
+    padding: 14px 8px !important;
+    min-height: 60px !important;
+}}
+"""
+
+# Use key-based targeting instead — inject per-key styles
+team_css += "</style>"
+
+# Simpler approach: inject one style block targeting by key attribute
+targeted_css = "<style>\n[data-testid='stAppViewContainer'] { background: #0d1117 !important; }\n[data-testid='stHeader'] { background: #0d1117 !important; }\nsection[data-testid='stMain'] { background: #0d1117 !important; }\n.block-container { padding: 1rem !important; max-width: 100% !important; }\nh1, h2, h3, h4 { color: #ffffff !important; }\np, label, div { color: #e6edf3; }\n.stButton > button {\n    background: #1c2a3e !important;\n    color: #79c0ff !important;\n    border: 1px solid #30475e !important;\n    border-radius: 8px !important;\n    font-size: 14px !important;\n    font-weight: 600 !important;\n    padding: 0.5rem 0.75rem !important;\n    width: 100% !important;\n    text-align: left !important;\n}\n[data-testid='stSuccess'] > div {\n    background: #0d2818 !important;\n    color: #3fb950 !important;\n    border: 1px solid #238636 !important;\n}\n"
+
+for code, _ in TEAMS:
+    color = TEAM_COLORS.get(code, "#1c2a3e")
+    targeted_css += f"button[data-testid='baseButton-secondary'][key='team_{code}'] {{ background: {color} !important; color: #ffffff !important; border: 1px solid rgba(255,255,255,0.2) !important; border-radius: 10px !important; font-weight: 700 !important; font-size: 15px !important; text-align: center !important; padding: 14px 8px !important; min-height: 60px !important; }}\n"
+
+targeted_css += "</style>"
+st.markdown(targeted_css, unsafe_allow_html=True)
 
 # ── TEAM SELECTION ─────────────────────────────────────────────────────────
 if st.session_state.current_team is None:
     st.markdown("## ⚾ MLB Prospect Analyzer")
     st.markdown("*Trade Show Edition — Tap a team*")
 
-    tiles_html = ""
-    for code, name in TEAMS:
+    # Inject per-button colors via nth-child targeting
+    # Build a style block matching button position in the grid
+    btn_colors = "<style>\n"
+    for i, (code, _) in enumerate(TEAMS):
         color = TEAM_COLORS.get(code, "#1c2a3e")
-        tiles_html += f"""
-        <div onclick="window.top.location.href = window.top.location.pathname + '?team={code}'"
-             style="background:{color};border-radius:10px;padding:14px 12px;
-                    text-align:center;border:1px solid rgba(255,255,255,0.15);
-                    cursor:pointer;-webkit-tap-highlight-color:rgba(255,255,255,0.2);">
-            <div style="color:#ffffff;font-weight:700;font-size:17px;letter-spacing:0.5px;">{code}</div>
-            <div style="color:rgba(255,255,255,0.85);font-size:12px;margin-top:2px;">{name}</div>
-        </div>"""
+        # Target each button by its position among all stButton divs on this page
+        btn_colors += f".stButton:nth-of-type({i+1}) > button {{ background: {color} !important; color: #ffffff !important; border: 1px solid rgba(255,255,255,0.25) !important; border-radius: 10px !important; font-weight: 700 !important; font-size: 15px !important; text-align: center !important; min-height: 60px !important; line-height: 1.3 !important; }}\n"
+    btn_colors += "</style>"
+    st.markdown(btn_colors, unsafe_allow_html=True)
 
-    components.html(f"""
-    <!DOCTYPE html>
-    <html>
-    <body style="margin:0;padding:4px;background:transparent;">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-        {tiles_html}
-    </div>
-    </body>
-    </html>
-    """, height=740, scrolling=True)
+    cols = st.columns(2)
+    for i, (code, name) in enumerate(TEAMS):
+        with cols[i % 2]:
+            if st.button(f"{code}\n{name}", key=f"team_{code}", use_container_width=True):
+                st.session_state.current_team = code
+                st.session_state.selected_player = None
+                st.rerun()
 
 # ── TEAM PROSPECTS ─────────────────────────────────────────────────────────
 else:
@@ -195,13 +213,13 @@ else:
     team_name = next(n for c, n in TEAMS if c == team)
     color = TEAM_COLORS.get(team, "#1c2a3e")
 
-    if st.button("← Back to All Teams"):
+    if st.button("← Back to All Teams", key="back"):
         st.session_state.current_team = None
         st.session_state.selected_player = None
         st.rerun()
 
     st.markdown(f"""
-    <div style="background:{color};border-radius:12px;padding:16px 20px;margin:12px 0;
+    <div style="background:{color};border-radius:12px;padding:16px 20px;margin:8px 0 16px 0;
          border:1px solid rgba(255,255,255,0.2);">
         <div style="color:#ffffff;font-size:28px;font-weight:800;">{team}</div>
         <div style="color:rgba(255,255,255,0.85);font-size:16px;">{team_name} — Top Prospects</div>
@@ -239,25 +257,21 @@ else:
                  padding:16px 20px;margin:4px 0 12px 0;">
                 <div style="color:#ffffff;font-size:20px;font-weight:700;margin-bottom:12px;">
                     {p['player']}
-                    <span style="color:rgba(255,255,255,0.5);font-size:14px;">· {p['pos']}</span>
+                    <span style="color:rgba(255,255,255,0.5);font-size:14px;"> · {p['pos']}</span>
                 </div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
-                    <div style="background:#0d1117;border-radius:8px;padding:10px 12px;
-                         border:1px solid #30475e;">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+                    <div style="background:#0d1117;border-radius:8px;padding:10px 12px;border:1px solid #30475e;">
                         <div style="color:#8b949e;font-size:11px;margin-bottom:4px;">CALL-UP SCORE</div>
-                        <div style="color:#ffffff;font-size:18px;font-weight:700;">{score}</div>
-                        <div style="background:{badge_bg};color:{badge_color};font-size:11px;
-                             font-weight:600;padding:3px 8px;border-radius:6px;
-                             display:inline-block;margin-top:4px;">{p['call_up']}</div>
+                        <div style="color:#ffffff;font-size:20px;font-weight:700;">{score}</div>
+                        <div style="background:{badge_bg};color:{badge_color};font-size:11px;font-weight:600;
+                             padding:3px 8px;border-radius:6px;display:inline-block;margin-top:4px;">{p['call_up']}</div>
                     </div>
-                    <div style="background:#0d1117;border-radius:8px;padding:10px 12px;
-                         border:1px solid #30475e;">
+                    <div style="background:#0d1117;border-radius:8px;padding:10px 12px;border:1px solid #30475e;">
                         <div style="color:#8b949e;font-size:11px;margin-bottom:4px;">POSITION</div>
-                        <div style="color:#ffffff;font-size:18px;font-weight:700;">{p['pos']}</div>
+                        <div style="color:#ffffff;font-size:20px;font-weight:700;">{p['pos']}</div>
                     </div>
                 </div>
-                <div style="background:#0d1117;border-radius:8px;padding:12px 14px;
-                     border:1px solid #30475e;">
+                <div style="background:#0d1117;border-radius:8px;padding:12px 14px;border:1px solid #30475e;">
                     <div style="color:#8b949e;font-size:11px;margin-bottom:8px;">🃏 CARD VALUES</div>
                     <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
                         <span style="color:#8b949e;font-size:13px;">Bowman Chrome</span>
