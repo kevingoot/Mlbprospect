@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MLB Prospect Analyzer</title>
+  <link rel="icon" type="image/png" href="/static/favicon.png"/>
+  <link rel="stylesheet" href="/static/style.css"/>
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-icon">⚾</span>
+        <div>
+          <h1>MLB Prospect Analyzer</h1>
+          <p class="subtitle">Trade Show Edition · 2026</p>
+        </div>
+      </div>
+      <div id="generated-time" class="timestamp"></div>
+    </div>
+  </header>
+
+  <main>
+    <!-- pybaseball Test Panel -->
+    <section class="pybaseball-panel" id="pybaseball-panel">
+      <div class="pb-header">
+        <span class="pb-title">🧪 pybaseball Integration Test</span>
+        <div style="display:flex;gap:0.5rem">
+          <button id="pb-refresh-btn" onclick="refreshPrices()" style="background:#1a2133;border-color:#1f3c5a;color:#58a6ff">🔄 Refresh Prices</button>
+          <button id="pb-run-btn" onclick="runPybaseballTest()">Run Test</button>
+        </div>
+      </div>
+      <div class="pb-body" id="pb-body">
+        <span class="pb-idle">Click "Run Test" to verify pybaseball is working.</span>
+      </div>
+    </section>
+
+    <!-- Summary Cards -->
+    <section class="summary-grid" id="summary">
+      <div class="stat-card strong-buy">
+        <div class="stat-value" id="s-strongbuy">—</div>
+        <div class="stat-label">🚀 Strong Buy</div>
+      </div>
+      <div class="stat-card buy-hold">
+        <div class="stat-value" id="s-buyhold">—</div>
+        <div class="stat-label">📈 Buy / Hold</div>
+      </div>
+      <div class="stat-card hold">
+        <div class="stat-value" id="s-hold">—</div>
+        <div class="stat-label">🤔 Hold</div>
+      </div>
+      <div class="stat-card avoid">
+        <div class="stat-value" id="s-avoid">—</div>
+        <div class="stat-label">⚠️ Avoid / Sell</div>
+      </div>
+      <div class="stat-card top-pick">
+        <div class="stat-value small" id="s-top">—</div>
+        <div class="stat-label">🏆 Top Prospect</div>
+      </div>
+      <div class="stat-card risk">
+        <div class="stat-value" id="s-risk">—</div>
+        <div class="stat-label">📊 Avg Risk Score</div>
+      </div>
+    </section>
+
+    <!-- Filters -->
+    <section class="filters">
+      <input type="text" id="search" placeholder="🔍 Search player..." oninput="fetchProspects()"/>
+      <select id="filter-pos" onchange="fetchProspects()">
+        <option value="">All Positions</option>
+        <option value="SS">SS</option>
+        <option value="OF">OF</option>
+        <option value="2B">2B</option>
+        <option value="RHP">RHP</option>
+        <option value="LHP">LHP</option>
+        <option value="1B">1B</option>
+      </select>
+      <select id="filter-jump" onchange="fetchProspects()">
+        <option value="">All Jump Levels</option>
+        <option>Extreme</option><option>Very High</option>
+        <option>High</option><option>Medium</option><option>Low</option>
+      </select>
+      <select id="filter-rec" onchange="fetchProspects()">
+        <option value="">All Recommendations</option>
+        <option value="strong-buy">Strong Buy</option>
+        <option value="buy-hold">Buy / Hold</option>
+        <option value="hold">Hold</option>
+        <option value="avoid">Avoid / Sell</option>
+      </select>
+      <button onclick="resetFilters()">Reset</button>
+    </section>
+
+    <!-- Results count -->
+    <div class="results-meta">
+      <span id="results-count"></span>
+    </div>
+
+    <!-- Cards Grid -->
+    <section class="cards-grid" id="cards-grid">
+      <div class="loading">Loading prospects…</div>
+    </section>
+  </main>
+
+  <footer>
+    <p>MLB Prospect Analyzer v1.0 · Data is illustrative and for collector/trade-show use only.</p>
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
